@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IM+Fell+English:ital@0;1&family=EB+Garamond&display=swap">
 <style>
 /* Layout: app shell. A quiet header, then one working surface at a time: the root tree, a list, one profile tab, or the library.
    Spacing: a 4px grid. Every gap, padding, size and line height is a multiple of 4.
@@ -35,6 +35,7 @@
   --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:24px;
   --ease:cubic-bezier(.32,.72,0,1); --spring:cubic-bezier(.34,1.56,.64,1);
   --splash-hi:#17140e;
+  --bad:#e9a07e; --bad-soft:rgba(233,160,126,.12); --f-doc:"IM Fell English","EB Garamond",Georgia,serif;
   color-scheme:dark;
 }
 /* Light: warm paper with the same gold, darkened a step so it reads on a pale ground. Follows the system setting. */
@@ -47,6 +48,7 @@
     --gold-soft:rgba(184,132,15,.13); --on-gold:#fffaf0; --mark:#2a2116;
     --shadow:0 16px 48px rgba(70,48,12,.16);
     --splash-hi:#fffaf0;
+    --bad:#b0532c; --bad-soft:rgba(176,83,44,.1);
     color-scheme:light;
   }
 }
@@ -112,6 +114,7 @@ a{color:var(--gold-ink)}
 .icon-btn{width:40px;height:40px;border-radius:50%;display:inline-grid;place-items:center;color:var(--muted)}
 .icon-btn:hover{background:var(--surface-2);color:var(--ink)}
 
+#banner[hidden]{display:none!important}
 #banner{display:flex;gap:var(--s3);align-items:center;justify-content:center;flex-wrap:wrap;padding-block:var(--s2);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--gold-soft);color:var(--gold-ink);font-size:13px;line-height:20px}
 main{flex:1;min-height:0;overflow:auto;position:relative;overflow-x:hidden}
 main:not(.is-canvas){touch-action:pan-y pinch-zoom}
@@ -434,6 +437,223 @@ main.is-canvas{overflow:hidden}
 .star[aria-pressed="true"]{color:var(--straw)}
 .star:hover{background:var(--surface-2)}
 .facet-toggle{display:none}
+
+/* lessons: a course map on a root spine, and a reader built for long-form reading */
+.lhead{display:flex;gap:var(--s4);align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:var(--s7)}
+.lhead h1{font:400 32px/40px var(--f-display)}
+.lib-tools{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center;margin-bottom:var(--s7)}
+.lib-tools .search{flex:1 1 220px;max-width:none}
+.course{max-width:760px;margin:0 auto}
+.chero{position:relative;overflow:hidden;padding:var(--s8) var(--s7);border-radius:var(--r-xl);background:radial-gradient(120% 140% at 100% 0%,var(--gold-soft),transparent 60%),var(--surface);border:1px solid var(--line)}
+.chero .kick,.lkick{font:500 12px/16px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-ink)}
+.chero h2{font:400 32px/40px var(--f-display);margin-top:var(--s3);max-width:520px}
+.chero p{margin:var(--s3) 0 0;color:var(--muted);max-width:520px}
+.chero .rootart svg{width:100%;height:100%;display:block}
+.chero>:not(.rootart){position:relative;padding-right:var(--s8)}
+.chero .rootart{position:absolute;right:var(--s7);top:-8px;width:28px;height:220px;opacity:.55;pointer-events:none}
+.cprog{display:grid;gap:var(--s2);margin-top:var(--s7);max-width:520px}
+.cbar{height:8px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.cbar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--hazel),var(--gold));transition:width .6s var(--ease)}
+.cprog .n{font:400 13px/20px var(--f-mono);color:var(--muted)}
+.chero .btn{margin-top:var(--s6)}
+.lvl{margin-top:var(--s10)}
+.lvl-h{display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:var(--s3);align-items:start}
+.lvl-n{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font:400 22px/1 var(--f-display);color:var(--gold-ink);border:1px solid var(--line-2);background:var(--bg);position:relative;z-index:1}
+.lvl.done .lvl-n{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.lvl-h .lkick{display:flex;gap:var(--s2);align-items:center}
+.lvl-h .lkick .n{color:var(--faint);letter-spacing:.04em}
+.lvl-h h2{font:400 26px/32px var(--f-display);margin-top:var(--s1)}
+.lvl-h p{margin:var(--s2) 0 0;color:var(--muted);font-size:14px;line-height:20px}
+.lpath{list-style:none;margin:var(--s4) 0 0;padding:0;position:relative}
+.lpath::before{content:"";position:absolute;left:12px;top:0;bottom:16px;width:24px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='160' viewBox='0 0 24 160'%3E%3Cpath d='M12 0 C6 26 18 52 11 80 C5 106 18 132 12 160' fill='none' stroke='%238a6526' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M11 44 C6 50 3 58 0 62 M12 118 C17 124 20 130 24 134' fill='none' stroke='%235e4520' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-y;
+  -webkit-mask:linear-gradient(#000 85%,transparent);mask:linear-gradient(#000 85%,transparent)}
+.lpath li{display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:var(--s3);padding-block:var(--s2)}
+.lpath .node{justify-self:center;margin-top:var(--s6);width:16px;height:16px;border-radius:50%;border:2px solid var(--root);background:var(--bg);position:relative;z-index:1;display:grid;place-items:center;color:var(--on-gold)}
+.lpath .node svg{width:10px;height:10px}
+.lpath li.done .node{background:var(--gold);border-color:var(--gold)}
+.lpath li.next .node{border-color:var(--gold);box-shadow:0 0 0 4px var(--gold-soft);animation:nodeGlow 2.4s ease-in-out infinite}
+@keyframes nodeGlow{50%{box-shadow:0 0 0 8px transparent}}
+.lcard{display:grid;gap:var(--s1);text-align:left;padding:var(--s4) var(--s5);border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);color:inherit;text-decoration:none;transition:transform .18s var(--ease),border-color .2s,background-color .2s}
+.lcard:hover{border-color:var(--hazel)}
+.lcard:active{transform:scale(.98)}
+.lpath li.next .lcard{border-color:var(--hazel)}
+.lcard .no{font:500 12px/16px var(--f-mono);color:var(--faint);letter-spacing:.06em;text-transform:uppercase;display:flex;gap:var(--s2);align-items:center}
+.lcard .no .ok{color:var(--gold-ink)}
+.lcard b{font:400 20px/28px var(--f-display);font-weight:400}
+.lcard .d{color:var(--muted);font-size:14px;line-height:20px}
+.lcard .m{font:400 12px/16px var(--f-mono);color:var(--faint);margin-top:var(--s1)}
+
+.lwrap{min-height:100%}
+.lprog{position:sticky;top:0;height:3px;z-index:5;background:transparent}
+.lprog i{display:block;height:100%;width:0;background:var(--gold);transition:width .12s linear}
+.lesson{max-width:704px}
+.lhero{padding-bottom:var(--s7);border-bottom:1px solid var(--line)}
+.lhero h1{font:400 40px/48px var(--f-display);margin-top:var(--s3)}
+.ldek{font:400 19px/28px var(--f-body);color:var(--muted);margin:var(--s4) 0 0}
+.lmeta{display:flex;gap:var(--s2) var(--s4);flex-wrap:wrap;margin-top:var(--s5);font:400 13px/20px var(--f-mono);color:var(--faint)}
+.lmeta .ok{color:var(--gold-ink)}
+@media (max-width:640px){.lhero h1{font-size:32px;line-height:40px}.ldek{font-size:17px;line-height:28px}.chero{padding:var(--s7) var(--s5)}.chero h2{font-size:28px;line-height:36px}}
+.lbody{padding-top:var(--s7);font-size:17px;line-height:28px}
+.lbody>p{margin:0 0 var(--s5)}
+.lbody b{font-weight:600;color:var(--ink)}
+.lbody>h2{font:400 26px/32px var(--f-display);margin:var(--s9) 0 var(--s4)}
+.lbody>ul{margin:0 0 var(--s5);padding:0;list-style:none;display:grid;gap:var(--s3)}
+.lbody>ul li{position:relative;padding-left:var(--s6)}
+.lbody>ul li::before{content:"";position:absolute;left:4px;top:11px;width:7px;height:7px;border-radius:50%;background:var(--root)}
+.lcall{display:grid;gap:var(--s1);margin:var(--s6) 0;padding:var(--s4) var(--s5);border-radius:var(--r-md);background:var(--surface);border-left:3px solid var(--gold);font-size:15px;line-height:24px}
+.lcall.watch{border-left-color:var(--bad)}
+.lcall.pro{border-left-color:var(--straw);background:var(--gold-soft)}
+.lcall .t{font:500 12px/16px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink)}
+.lcall.watch .t{color:var(--bad)}
+.lcall b{font-weight:600}
+.lcall .h{font-weight:600;font-size:16px}
+.ltab{margin:var(--s5) 0 var(--s6);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;font-size:14px;line-height:20px}
+.ltab table{width:100%;border-collapse:collapse}
+.ltab th{text-align:left;font:500 11px/16px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);background:var(--surface);padding:var(--s3) var(--s4)}
+.ltab td{padding:var(--s3) var(--s4);border-top:1px solid var(--line);vertical-align:top}
+.ltab td:first-child{font-weight:600;white-space:nowrap}
+@media (max-width:520px){.ltab td:first-child{white-space:normal}}
+
+.lx{margin:var(--s7) 0;padding:var(--s5);border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);font-size:15px;line-height:24px}
+.lx-h{display:flex;align-items:center;gap:var(--s2);font:500 11px/16px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-ink)}
+.lx-h svg{width:14px;height:14px}
+.lx-h .sc{margin-left:auto;color:var(--faint);letter-spacing:.04em}
+.lx-q{font-weight:600;font-size:16px;line-height:24px;margin-top:var(--s2)}
+.lx-fell{font:400 28px/36px var(--f-doc);margin:var(--s4) 0 0;padding:var(--s4) var(--s5);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line);text-align:center}
+.lx-opts{display:grid;gap:var(--s2);margin-top:var(--s4)}
+.lopt{display:flex;align-items:center;gap:var(--s3);text-align:left;min-height:48px;padding:var(--s3) var(--s4);border-radius:var(--r-md);border:1px solid var(--line-2);background:var(--bg);transition:border-color .2s,background-color .2s,transform .18s var(--ease)}
+.lopt:hover:not([disabled]){border-color:var(--hazel)}
+.lopt:active:not([disabled]){transform:scale(.98)}
+.lopt[disabled]{cursor:default}
+.lopt .mk{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;font:500 11px/1 var(--f-mono);color:var(--faint)}
+.lopt.ok{border-color:var(--gold);background:var(--gold-soft)}
+.lopt.ok .mk{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.lopt.no{border-color:var(--bad);background:var(--bad-soft)}
+.lopt.no .mk{background:var(--bad);border-color:var(--bad);color:var(--bg)}
+.lopt.dim{opacity:.55}
+.lwhy{margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--line);display:grid;gap:var(--s2);animation:rise .36s var(--ease) both}
+.lwhy .v{font-weight:600;color:var(--gold-ink)}
+.lwhy .v.no{color:var(--bad)}
+.lwhy .btn{justify-self:start}
+.lsort{display:grid;gap:var(--s3);margin-top:var(--s4)}
+.lsrow{display:grid;gap:var(--s2);padding:var(--s3) var(--s4);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line)}
+.lsrow.ok{border-color:var(--gold)}
+.lsrow.no{border-color:var(--bad)}
+.lsrow .t{font-size:15px;line-height:24px}
+.lsrow .seg{justify-self:start;max-width:100%;flex-wrap:wrap}
+.lsrow .seg button{height:32px;font-size:13px}
+.lsrow .seg button.ok{background:var(--gold);color:var(--on-gold)}
+.lsrow .seg button.no{background:var(--bad);color:var(--bg)}
+.lsrow .w{font-size:14px;line-height:20px;color:var(--muted);animation:rise .3s var(--ease) both}
+.lord{display:grid;gap:var(--s2);margin-top:var(--s4)}
+.lord-pool{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s4)}
+.lchip{min-height:40px;padding:var(--s2) var(--s4);border-radius:var(--r-md);border:1px dashed var(--line-2);background:var(--bg);text-align:left;font-size:14px;line-height:20px;transition:transform .18s var(--ease),border-color .2s}
+.lchip:hover{border-color:var(--hazel)}
+.lchip:active{transform:scale(.97)}
+.lslot{display:grid;grid-template-columns:28px minmax(0,1fr);gap:var(--s3);align-items:center;min-height:48px;padding:var(--s2) var(--s4);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:20px;animation:rise .3s var(--ease) both}
+.lslot .i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:500 12px/1 var(--f-mono);background:var(--surface-3);color:var(--muted)}
+.lslot.ok{border-color:var(--gold)}
+.lslot.ok .i{background:var(--gold);color:var(--on-gold)}
+.lslot.no{border-color:var(--bad)}
+.lslot.no .i{background:var(--bad);color:var(--bg)}
+.lslot.wait{border-style:dashed;color:var(--faint);animation:none}
+.lflips{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:var(--s2);margin-top:var(--s4)}
+.lflip{height:88px;perspective:600px;padding:0}
+.lflip .in{display:block;position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+.lflip.on .in{transform:rotateY(180deg)}
+.lflip .f,.lflip .b{position:absolute;inset:0;display:grid;place-items:center;padding:var(--s2) var(--s3);border-radius:var(--r-md);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}
+.lflip .f{background:var(--bg);border:1px solid var(--line-2);font:400 21px/24px var(--f-doc)}
+.lflip .b{background:var(--gold-soft);border:1px solid var(--gold);transform:rotateY(180deg);font-size:14px;line-height:20px;color:var(--ink)}
+.ldoc{margin-top:var(--s4);padding:var(--s6);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line);font:400 19px/32px var(--f-doc);color:var(--ink)}
+.ldoc .dt{font:italic 400 15px/24px var(--f-doc);color:var(--muted);margin-bottom:var(--s3);text-align:center}
+.lclue{font:inherit;color:inherit;padding:0 2px;border-radius:4px;text-decoration:underline dotted var(--gold);text-decoration-thickness:1.5px;text-underline-offset:5px;transition:background-color .2s,color .2s}
+.lclue:hover{background:var(--gold-soft)}
+.lclue.on{background:var(--gold-soft);color:var(--gold-ink);text-decoration-style:solid}
+.lclue.cur{background:var(--gold);color:var(--on-gold)}
+.lnote{margin-top:var(--s4);display:grid;gap:var(--s1);padding:var(--s3) var(--s4);border-radius:var(--r-md);border-left:3px solid var(--gold);background:var(--bg);font-size:15px;line-height:24px;animation:rise .3s var(--ease) both}
+.lnote .k{font:500 11px/16px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.lnote.idle{border-left-color:var(--line-2);color:var(--faint);animation:none}
+.lcen{margin-top:var(--s4);overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg);overscroll-behavior-x:contain}
+.lcen .cap{font:400 12px/16px var(--f-mono);color:var(--faint);padding:var(--s3) var(--s4);border-bottom:1px solid var(--line);white-space:nowrap}
+.lcen table{border-collapse:collapse;min-width:640px;width:100%}
+.lcen th{font:500 11px/16px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:left;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line-2);white-space:nowrap}
+.lcen td{border-bottom:1px solid var(--line);padding:0;font:400 17px/24px var(--f-doc);white-space:nowrap}
+.lcen tr:last-child td{border-bottom:0}
+.lcen td+td,.lcen th+th{border-left:1px solid var(--line)}
+.lcen td>span,.lcen td>button{display:block;width:100%;text-align:left;padding:var(--s2) var(--s3);min-height:40px}
+.lcen td>button{text-decoration:underline dotted var(--gold);text-underline-offset:5px;text-decoration-thickness:1.5px}
+.lcen td>button:hover{background:var(--gold-soft)}
+.lcen td>button.on{background:var(--gold-soft);color:var(--gold-ink);text-decoration-style:solid}
+.lcen td>button.cur{background:var(--gold);color:var(--on-gold)}
+.lchk{display:grid;gap:var(--s1);margin-top:var(--s3)}
+.lchk button{display:grid;grid-template-columns:24px minmax(0,1fr);gap:var(--s3);align-items:start;text-align:left;padding:var(--s2) var(--s2);border-radius:var(--r-sm);font-size:15px;line-height:24px}
+.lchk button:hover{background:var(--surface-2)}
+.lchk .bx{width:20px;height:20px;margin-top:2px;border-radius:6px;border:1.5px solid var(--line-2);display:grid;place-items:center;color:var(--on-gold);transition:background-color .2s,border-color .2s}
+.lchk button[aria-pressed="true"] .bx{background:var(--gold);border-color:var(--gold)}
+.lchk button[aria-pressed="true"] .tx{color:var(--muted)}
+.ltool{display:grid;gap:var(--s4);margin-top:var(--s4)}
+.lfield{display:grid;gap:var(--s1);font-size:13px;line-height:20px;color:var(--muted)}
+.lfield input,.lfield select,.lfield textarea{height:44px;padding:0 var(--s4);border-radius:var(--r-md);border:1px solid var(--line-2);background:var(--bg);color:var(--ink);font-size:16px;width:100%;min-width:0}
+.lfield textarea{height:auto;min-height:220px;padding:var(--s3) var(--s4);line-height:24px;font-size:14px;resize:vertical}
+.lfield input:focus,.lfield select:focus,.lfield textarea:focus{outline:none;border-color:var(--gold)}
+.lgrid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--s3)}
+.sx-out{display:flex;align-items:center;gap:var(--s5);flex-wrap:wrap}
+.sx-code{font:500 40px/48px var(--f-mono);color:var(--gold-ink);letter-spacing:.06em}
+.sx-steps{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.sx-steps span{display:grid;justify-items:center;min-width:28px;padding:var(--s1) var(--s1);border-radius:var(--r-sm);background:var(--bg);border:1px solid var(--line);font:400 15px/20px var(--f-mono)}
+.sx-steps span i{font-style:normal;font-size:11px;line-height:16px;color:var(--faint)}
+.sx-steps span.k{border-color:var(--gold)}
+.sx-steps span.k i{color:var(--gold-ink)}
+.sx-steps span.skip{opacity:.45}
+.sx-names{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.sx-names .tag[aria-pressed="true"]{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold)}
+.sx-names .tag[aria-pressed="true"] i{color:var(--gold-ink)}
+.lsub{font:500 11px/16px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.cm-in{display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap}
+.cm-in input[type=range]{flex:1 1 200px;accent-color:var(--gold);height:32px}
+.cm-in input[type=number]{width:120px;flex:none}
+.cm-rows{display:grid;gap:var(--s1)}
+.cmr{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:var(--s3);align-items:center;padding:var(--s1) 0;font-size:13px;line-height:20px;color:var(--faint);transition:color .2s}
+.cmr.on{color:var(--ink)}
+.cmr .bar{position:relative;height:20px}
+.cmr .bar::before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;background:var(--line)}
+.cmr .rg{position:absolute;top:6px;height:8px;border-radius:999px;background:var(--surface-3);transition:background-color .2s}
+.cmr.on .rg{background:var(--hazel)}
+.cmr .av{position:absolute;top:3px;width:2px;height:14px;background:var(--faint);border-radius:1px}
+.cmr.on .av{background:var(--gold)}
+.cm-now{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);transition:left .15s}
+.cm-chart{position:relative}
+.cm-sum{font-size:15px;line-height:24px}
+.cm-sum b{color:var(--gold-ink)}
+.cm-note{font-size:12px;line-height:16px;color:var(--faint)}
+@media (max-width:520px){.cmr{grid-template-columns:minmax(0,1fr)}.cmr .bar{grid-column:1}}
+.cite-out{padding:var(--s4);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--gold);font-size:15px;line-height:24px}
+.cite-out i{font-style:italic}
+.cite-out .ph{color:var(--faint)}
+.yt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--s2)}
+.yt-stat{padding:var(--s3) var(--s4);border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line)}
+.yt-stat b{display:block;font:400 28px/36px var(--f-display);color:var(--gold-ink)}
+.yt-stat span{font-size:13px;line-height:20px;color:var(--muted)}
+.yt-who{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.ltake{margin-top:var(--s9);padding:var(--s6);border-radius:var(--r-lg);background:var(--gold-soft);border:1px solid var(--line)}
+.ltake h2,.lsrc h2{font:400 22px/28px var(--f-display)}
+.ltake ul{list-style:none;margin:var(--s4) 0 0;padding:0;display:grid;gap:var(--s3)}
+.ltake li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:var(--s3);font-size:16px;line-height:24px}
+.ltake li svg{margin-top:5px;color:var(--gold-ink)}
+.lsrc{margin-top:var(--s9)}
+.lsrc>p{margin:var(--s2) 0 var(--s4);color:var(--muted);font-size:14px;line-height:20px}
+.lsrc .lres{gap:var(--s2)}
+.lfoot{margin-top:var(--s9);padding-top:var(--s7);border-top:1px solid var(--line);display:grid;gap:var(--s4)}
+.lnext{display:grid;gap:var(--s1);text-align:left;padding:var(--s5) var(--s6);border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line-2);transition:transform .18s var(--ease),border-color .2s}
+.lnext:hover{border-color:var(--gold)}
+.lnext:active{transform:scale(.98)}
+.lnext .k{font:500 12px/16px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-ink);display:flex;justify-content:space-between;align-items:center}
+.lnext b{font:400 24px/32px var(--f-display);font-weight:400}
+.lnext span.d{color:var(--muted);font-size:14px;line-height:20px}
+.lfoot .row{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.lfoot .row .sp{flex:1}
+.ldone-b[aria-pressed="true"]{background:var(--gold-soft)}
 
 /* dialog */
 dialog{border:1px solid var(--line-2);padding:0;border-radius:var(--r-xl);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto}
@@ -998,15 +1218,18 @@ async function saveFact(key,ch){
 }
 
 /* ---------- state & routing ---------- */
-const state={view:'tree',id:null,mode:'profile',filter:'All',focus:null,editFam:false,q:'',libQ:'',libTags:new Set(),libSaved:false};
+const state={lx:{},view:'tree',id:null,mode:'profile',filter:'All',focus:null,editFam:false,q:'',libQ:'',libTags:new Set(),libSaved:false};
 function route(){
   if(/access_token=|error_description=|type=signup|type=recovery/.test(location.hash)){ state.view='tree'; return }
   const h=decodeURIComponent(location.hash.slice(1));
+  if(h==='learn'){ state.view='learn'; setPane('learn'); return }
+  if(h.startsWith('learn/')){ state.view='lesson'; state.lessonId=h.slice(6); setPane('learn'); return }
+  if(h==='library') setPane('links');
   if(h==='people'||h==='find'||h==='library'||h==='archive'||h==='tree'||h==='chart'||!h){state.view=h||'tree'; return}
   const [id,m]=h.split('.'); if(state.id!==id){state.filter='All';state.editFam=false}
   state.view='person'; state.id=id; state.mode=m==='circle'?'circle':'profile';
 }
-function go(tok,dir){ if(state.view!=='person') state.backTo=state.view; if(dir) navDir=dir; if(location.hash.slice(1)!==tok){ try{location.hash=tok}catch{} } route(); render(); }
+function go(tok,dir){ if(state.view!=='person') state.backTo=state.view==='lesson'?'learn/'+state.lessonId:state.view; if(dir) navDir=dir; if(location.hash.slice(1)!==tok){ try{location.hash=tok}catch{} } route(); render(); }
 window.addEventListener('hashchange',()=>{route();render()});
 
 /* ---------- render ---------- */
@@ -1015,8 +1238,12 @@ function scheduleRender(){ if(!rq) rq=requestAnimationFrame(()=>{rq=0;render()})
 // View transitions: tabs slide in the direction of travel; opening a person pushes in from the right, going back slides from the left.
 const ORDER=['tree','chart','people','find','library','archive'];
 let lastKey=null, navDir=null;
-const viewKey=()=>!READY?'loading':state.view==='person'?`p:${state.id}:${state.mode}:${state.mode==='circle'?'':PTABS.includes(state.ptab)?state.ptab:'timeline'}`:state.view;
+const viewKey=()=>!READY?'loading':state.view==='lesson'?'lesson:'+state.lessonId:state.view==='person'?`p:${state.id}:${state.mode}:${state.mode==='circle'?'':PTABS.includes(state.ptab)?state.ptab:'timeline'}`:state.view;
 function dirFor(a,b){
+  const lk=k=>k.startsWith('lesson:');
+  if(lk(a)||lk(b)){ if(lk(a)&&lk(b)) return lessonIdx(b.slice(7))>lessonIdx(a.slice(7))?'in-right':'in-left'; return lk(b)?'in-right':'in-left' }
+  if((a==='learn'&&b==='library')||(a==='library'&&b==='learn')) return 'in-fade';
+  if(a==='learn') a='library'; if(b==='learn') b='library';
   const ta=!a.startsWith('p:'), tb=!b.startsWith('p:');
   if(ta&&tb) return ORDER.indexOf(b)>ORDER.indexOf(a)?'in-right':'in-left';
   if(ta) return 'in-right'; if(tb) return 'in-left';
@@ -1042,6 +1269,8 @@ function render(){
   else if(state.view==='people') html=peopleHTML();
   else if(state.view==='find') html=findHTML();
   else if(state.view==='library') html=libraryHTML();
+  else if(state.view==='learn') html=learnHTML();
+  else if(state.view==='lesson') html=lessonHTML(state.lessonId);
   else if(state.view==='archive') html=archiveHTML();
   else if(state.view==='person') html=personHTML(state.id);
   main.innerHTML=`<div class="view">${html}</div>`;
@@ -1064,7 +1293,7 @@ let pulseQ=[];
 function pulseAfter(sel){ pulseQ.push(sel) }
 function pulse(el){ if(!el||REDUCED.matches) return; el.classList.remove('pop'); void el.getBoundingClientRect(); el.classList.add('pop'); el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true}) }
 function haptic(){ try{ navigator.vibrate?.(8) }catch{} }
-function afterRender(){ const q=pulseQ; pulseQ=[]; q.forEach(sel=>{ try{ document.querySelectorAll(sel).forEach(pulse) }catch{} }); placePill() }
+function afterRender(){ const q=pulseQ; pulseQ=[]; q.forEach(sel=>{ try{ document.querySelectorAll(sel).forEach(pulse) }catch{} }); placePill(); lessonScroll() }
 function placePill(){}
 const NAVI={
   tree:'<path d="M12 16.2V12M5.5 7.8V12h13V7.8"/><circle class="f" cx="12" cy="18.8" r="2.6"/><circle class="f" cx="5.5" cy="5.2" r="2.6"/><circle class="f" cx="18.5" cy="5.2" r="2.6"/>',
@@ -1078,7 +1307,7 @@ let navCur=null;
 function renderNav(){
   const h=READY?allHunts().length:0;
   const items=[['tree','Tree'],['chart','Chart'],['people','People'],['find','Research',h],['library','Library'],['archive','Archive',READY?S.archive.size:0,'quiet']];
-  const cur=state.view==='person'?'':state.view;
+  const cur=state.view==='person'?'':state.view==='learn'||state.view==='lesson'?'library':state.view;
   const nav=$('#nav');
   if(!nav.querySelector('.tabs')) nav.innerHTML='<div class="tabs">'+items.map(([k,l])=>`<button class="tab" data-go="${k}" aria-current="false"><span class="ico"><span class="rip"></span><svg viewBox="0 0 24 24" aria-hidden="true">${NAVI[k]}</svg></span><span class="lbl">${l}</span></button>`).join('')+'</div>';
   items.forEach(([k,,n,q])=>{
@@ -1182,7 +1411,7 @@ async function submitSync(form,mode){
 function renderBanner(){
   const b=$('#banner'); const ex=READY&&[...S.people.values()].some(p=>p.example);
   const local=READY&&MODE==='local'&&!localStorage.getItem(MIRROR);
-  b.hidden=!ex&&!local;
+  b.hidden=true; return;
   b.innerHTML=local?(ENV==='web'?`<span>Saved on this device only.</span><button class="btn sm" data-act="sync-setup">Set up sync</button>`:`<span>Not connected to your saved tree. Changes made here stay in this browser only.</span>`)
     :ex?`<span>This tree holds an example family.</span><button class="btn sm" data-act="clear-examples">Remove examples</button>`:'';
 }
@@ -1556,6 +1785,7 @@ function openCardMenu(id,el){
   const root=treeRoot();
   m.innerHTML=`<button class="cm-head" data-go="${esc(id)}" role="menuitem">${ava(p,40)}<span><b>${esc(nm(p))}</b><span>${esc(span(p))}</span></span></button>
     <button data-go="${esc(id)}" role="menuitem">Open profile</button>
+    <button data-act="cm-edit" data-id="${esc(id)}" role="menuitem">Edit</button>
     <button data-go="${esc(id)}.circle" role="menuitem">Circle view</button>
     <button data-act="chart-to" data-id="${esc(id)}" data-open="1" role="menuitem">Open in chart</button>
     ${root!==id?`<button data-act="root-here" data-id="${esc(id)}" role="menuitem">Start tree here</button>`:''}
@@ -1834,7 +2064,7 @@ function peopleHTML(){
   return `<div class="page"><div class="list-head"><h1>People <span class="muted" style="font-size:1rem;font-family:var(--f-mono)">${S.people.size}</span></h1>
     <div class="list-tools"><button class="btn sm" data-act="people-marked" aria-pressed="${!!state.onlyMarked}" aria-label="Show marked only" title="Marked only"><span class="dotm${state.onlyMarked?' on':''}"></span>${[...S.people.values()].filter(p=>p.marked).length}</button>
     <label class="search">${ICON.search}<input id="people-q" type="search" placeholder="Search names or places" value="${esc(state.q)}" aria-label="Search people"></label>
-    <button class="btn sm" data-act="import">Import</button><button class="btn sm" data-act="export">Export</button>${ENV==='web'?`<button class="btn sm" data-act="sync-setup">Sync</button>`:''}</div></div>
+    <button class="btn sm" data-act="import">Import</button><button class="btn sm" data-act="export">Export</button>${ENV==='web'?`<button class="btn sm" data-act="sync-setup">Sync</button>`:''}${[...S.people.values()].some(p=>p.example)?`<button class="btn sm ghost" data-act="clear-examples">Remove examples</button>`:''}</div></div>
     <div class="plist stagger">${rows||`<p class="muted">No one matches “${esc(state.q)}”.</p>`}</div></div>`;
 }
 
@@ -1843,7 +2073,7 @@ function personHTML(id){
   const p=S.people.get(id);
   if(!p) return `<div class="page"><div class="empty" style="position:static;min-height:50vh"><div class="inner"><h2>Not in this tree</h2><button class="btn" data-go="tree">Back to the tree</button></div></div></div>`;
   const alts=(p.altNames||[]).filter(a=>a.name);
-  const backLabel={tree:'Tree',people:'People',find:'Research',library:'Library',archive:'Archive'}[state.backTo||'people']||'People';
+  const backLabel=String(state.backTo||'').startsWith('learn/')?'Lesson':{tree:'Tree',people:'People',find:'Research',library:'Library',archive:'Archive'}[state.backTo||'people']||'People';
   const head=`<button class="backlink" data-act="back"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${backLabel}</button><div class="phead">
     <div class="portrait">${canFiles()?`<button class="pbtn" data-act="portrait" aria-label="Profile photo">${ava(p,88)}</button><button class="cam" data-act="portrait" aria-label="Profile photo" tabindex="-1">${ICON.cam}</button>`:ava(p,88)}</div>
     <div class="ptitle"><div class="nameline"><h1>${esc(nm(p))}</h1><button class="markbtn" data-act="mark" aria-pressed="${!!p.marked}" aria-label="Marker" title="Marker"><span></span></button></div>
@@ -2057,7 +2287,7 @@ function fileUnderStep2(pid){
 /* ---------- library ---------- */
 const FACETS=[['records','Records'],['place','Places'],['topic','Topics'],['format','Format'],['access','Access']];
 function libraryHTML(){
-  if(!LIB) return LIB_ERR?`<div class="page"><p class="muted">The library didn’t load. Reload the page to try again.</p></div>`:loadingHTML();
+  if(!LIB) return LIB_ERR?`<div class="page">${libHead('links')}<p class="muted">The library didn’t load. Reload the page to try again.</p></div>`:loadingHTML();
   const q=state.libQ.trim().toLowerCase(); const sel=state.libTags;
   const savedSet=new Set([...S.saved.keys()]);
   const match=it=>{
@@ -2077,17 +2307,299 @@ function libraryHTML(){
   const rows=res.slice(0,400).map(it=>`<div class="lrow"><div style="min-width:0"><a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(it.t)}</a> <span class="host">${esc(host(it.u))}</span></div>
     <button class="star" data-act="libsave" data-id="${esc(it.id)}" aria-pressed="${savedSet.has(it.id)}" aria-label="Save">${savedSet.has(it.id)?ICON.starF:ICON.star}</button>
     ${it.d?`<p>${esc(it.d)}</p>`:''}<div class="tg">${[...(it.records||[]),...(it.place||[]),...(it.topic||[])].slice(0,6).map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>`).join('');
-  return `<div class="page"><div class="list-head"><h1>Library <span class="muted" style="font-size:1rem;font-family:var(--f-mono)">${res.length} / ${LIB.length}</span></h1>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;flex:0 1 460px;min-width:0">
-      <label class="search" style="flex:1 1 220px">${ICON.search}<input id="lib-q" type="search" placeholder="Search the library" value="${esc(state.libQ)}" aria-label="Search the library"></label>
+  return `<div class="page">${libHead('links')}
+    <div class="lib-tools"><span class="count" style="margin:0 var(--s2) 0 0">${res.length} / ${LIB.length}</span>
+      <label class="search">${ICON.search}<input id="lib-q" type="search" placeholder="Search the library" value="${esc(state.libQ)}" aria-label="Search the library"></label>
       <button class="btn sm" data-act="libsaved" aria-pressed="${state.libSaved}">${state.libSaved?ICON.starF:ICON.star} Saved ${savedSet.size||''}</button>
       ${sel.size||state.libQ||state.libSaved?`<button class="btn sm ghost" data-act="libclear">Clear</button>`:''}
-    </div></div>
+    </div>
     <div class="lib"><div><button class="btn sm facet-toggle" data-act="libfacets" aria-expanded="${!!state.libOpen}">${ICON.filter} Filters${sel.size?` · ${sel.size}`:''}</button><aside class="facets${state.libOpen?' open':''}">${facetHTML}</aside></div><div class="lres stagger">${rows||'<p class="muted">Nothing matches every filter. Remove a tag to widen the search.</p>'}${res.length>400?`<p class="muted">Showing 400 of ${res.length}. Add a tag to narrow.</p>`:''}</div></div></div>`;
 }
 // Saved stars are keyed by a hash of the link, so they survive the library being reordered or extended.
 function urlId(u){ let h=2166136261; for(const ch of String(u).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619) } return 'L'+(h>>>0).toString(36) }
 async function loadLibrary(){ try{ const r=await fetch('library.json'); if(!r.ok) throw 0; const j=await r.json(); LIB=(j.items||j).map(it=>({...it,id:urlId(it.u)})) }catch{ LIB_ERR=true } if(state.view==='library') scheduleRender() }
+
+/* ---------- lessons ---------- */
+// A course in family history research, loaded from lessons.json. Progress and checklists sync with the tree
+// (meta/lessons); answers to exercises live in memory for the session (state.lx), keyed "lessonId:blockIndex".
+let LES=null, LES_ERR=false;
+async function loadLessons(){ try{ const r=await fetch('lessons.json'); if(!r.ok) throw 0; LES=await r.json() }catch{ LES_ERR=true } if(state.view==='learn'||state.view==='lesson') scheduleRender() }
+let PANE=(()=>{ try{ return localStorage.getItem('bod-libpane')==='links'?'links':'learn' }catch{ return 'learn' } })();
+function setPane(p){ PANE=p; try{ localStorage.setItem('bod-libpane',p) }catch{} }
+const tabTok=k=>k==='library'&&PANE==='learn'?'learn':k;
+const lessonIdx=id=>LES?LES.lessons.findIndex(l=>l.id===id):-1;
+const lpro=()=>S.meta.get('lessons')||{};
+const ldone=id=>!!(lpro().done||{})[id];
+async function setDone(id,on){ const p=lpro(), d={...(p.done||{})}; if(on) d[id]=Date.now(); else delete d[id]; await put('meta','lessons',{...p,done:d}) }
+const lxs=k=>state.lx[k]||(state.lx[k]={});
+const md=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>');
+const LI={
+  chk:'<svg width="10" height="10" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chk14:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  x:'<svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  arrow:'<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back:'<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ex:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/></svg>',
+  copy:'<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 10.5V3.6C3 3 3.4 2.5 4 2.5h6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+};
+const EXK=['quiz','sort','order','flip','clues','census','check','tool'];
+const nEx=l=>l.blocks.filter(b=>EXK.some(k=>b[k])).length;
+const libHead=p=>`<div class="lhead"><h1>Library</h1><div class="seg" role="group" aria-label="Library"><button data-go="learn" aria-pressed="${p==='learn'}">Lessons</button><button data-go="library" aria-pressed="${p==='links'}">Sources</button></div></div>`;
+const libHost=u=>{ try{ return new URL(u).hostname.replace(/^www\./,'') }catch{ return u } };
+const libRow=(it,saved)=>`<div class="lrow"><div style="min-width:0"><a href="${esc(it.u)}" target="_blank" rel="noopener">${esc(it.t)}</a> <span class="host">${esc(libHost(it.u))}</span></div>
+  <button class="star" data-act="libsave" data-id="${esc(it.id)}" aria-pressed="${saved.has(it.id)}" aria-label="Save">${saved.has(it.id)?ICON.starF:ICON.star}</button>${it.d?`<p>${esc(it.d)}</p>`:''}</div>`;
+
+function learnHTML(){
+  if(!LES) return LES_ERR?`<div class="page">${libHead('learn')}<p class="muted">The lessons didn’t load. Reload the page to try again.</p></div>`:loadingHTML();
+  const ls=LES.lessons, done=ls.filter(l=>ldone(l.id)).length, nx=ls.find(l=>!ldone(l.id)), pct=Math.round(done/ls.length*100);
+  const hero=`<section class="chero"><span class="rootart">${MARK}</span><div class="kick">Course · ${ls.length} lessons · ${LES.levels.length} levels</div>
+    <h2>${done?(nx?'Keep digging':'You’ve finished the course'):'Learn to research like a professional'}</h2>
+    <p>${nx?'Short lessons that take you from your first certificate to a written proof. Each one draws on sources in your library, with exercises built around the example family.':'Every lesson is here whenever you need it. The plan builder in Lesson 12 works on anyone in your tree.'}</p>
+    <div class="cprog"><span class="n">${done} of ${ls.length} complete</span><div class="cbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress"><i style="width:${pct}%"></i></div></div>
+    ${nx?`<button class="btn primary" data-go="learn/${esc(nx.id)}">${done?'Continue with':'Begin'} lesson ${ls.indexOf(nx)+1} ${LI.arrow}</button>`:''}</section>`;
+  const lv=LES.levels.map(v=>{
+    const its=ls.map((l,i)=>[l,i]).filter(([l])=>l.level===v.n), dn=its.filter(([l])=>ldone(l.id)).length;
+    return `<section class="lvl${dn===its.length?' done':''}"><div class="lvl-h"><span class="lvl-n">${dn===its.length?LI.chk14:v.n}</span><div><div class="lkick">Level ${v.n} · ${esc(v.k)} <span class="n">${dn}/${its.length}</span></div><h2>${esc(v.t)}</h2><p>${esc(v.d)}</p></div></div>
+      <ol class="lpath">${its.map(([l,i])=>{ const d=ldone(l.id), n=nEx(l);
+        return `<li class="${d?'done':nx===l?'next':''}"><span class="node">${d?LI.chk:''}</span><button class="lcard" data-go="learn/${esc(l.id)}"><span class="no">Lesson ${i+1}${d?'<span class="ok">· Done</span>':nx===l?'<span class="ok">· Up next</span>':''}</span><b>${esc(l.title)}</b><span class="d">${esc(l.dek)}</span><span class="m">${l.min} min${n?` · ${n} exercise${n>1?'s':''}`:''}</span></button></li>` }).join('')}</ol></section>`;
+  }).join('');
+  return `<div class="page">${libHead('learn')}<div class="course stagger">${hero}${lv}</div></div>`;
+}
+
+function lessonHTML(id){
+  if(!LES) return LES_ERR?`<div class="page">${libHead('learn')}<p class="muted">The lessons didn’t load. Reload the page to try again.</p></div>`:loadingHTML();
+  const k=lessonIdx(id), l=LES.lessons[k];
+  if(!l) return `<div class="page"><button class="backlink" data-go="learn">${LI.back}Lessons</button><p class="muted">That lesson doesn’t exist.</p></div>`;
+  const v=LES.levels.find(x=>x.n===l.level), nx=LES.lessons[k+1], dn=ldone(id), ne=nEx(l);
+  const saved=new Set(S.saved.keys()), srcs=LIB?l.lib.map(t=>LIB.find(x=>x.t===t)).filter(Boolean):[];
+  return `<div class="lwrap"><div class="lprog" aria-hidden="true"><i></i></div><div class="page lesson">
+  <button class="backlink" data-go="learn">${LI.back}Lessons</button>
+  <header class="lhero"><div class="lkick">Level ${v.n} · ${esc(v.k)} · ${esc(v.t)}</div><h1>${esc(l.title)}</h1><p class="ldek">${md(l.dek)}</p>
+    <div class="lmeta"><span>Lesson ${k+1} of ${LES.lessons.length}</span><span>${l.min} min read</span>${ne?`<span>${ne} exercise${ne>1?'s':''}</span>`:''}${dn?`<span class="ok">Complete</span>`:''}</div></header>
+  <article class="lbody">${l.blocks.map((b,i)=>blockHTML(l,b,i)).join('')}</article>
+  <section class="ltake"><h2>What to remember</h2><ul>${l.takeaways.map(t=>`<li>${LI.chk14}<span>${md(t)}</span></li>`).join('')}</ul></section>
+  ${srcs.length?`<section class="lsrc"><h2>From the library</h2><p>Sources for going deeper. Star any you want to keep with your saved sources.</p><div class="lres">${srcs.map(it=>libRow(it,saved)).join('')}</div></section>`:''}
+  <footer class="lfoot">
+    <button class="lnext" data-act="lnext" data-id="${esc(l.id)}" data-to="${nx?esc(nx.id):''}"><span class="k">${nx?`Next · Lesson ${k+2}`:'Finish the course'}${LI.arrow}</span><b>${esc(nx?nx.title:'Back to all lessons')}</b><span class="d">${esc(nx?nx.dek:'Marks this lesson complete. Every lesson stays here whenever you need it.')}</span></button>
+    <div class="row"><button class="btn sm ldone-b" data-act="ldone" data-id="${esc(l.id)}" aria-pressed="${dn}">${dn?LI.chk14+' Complete':'Mark as complete'}</button><span class="sp"></span><button class="btn sm ghost" data-go="learn">All lessons</button></div>
+  </footer></div></div>`;
+}
+
+const xh=(label,score)=>`<div class="lx-h">${LI.ex}<span>${esc(label)}</span>${score?`<span class="sc">${esc(score)}</span>`:''}</div>`;
+const CALL={tip:'Tip',watch:'Watch out',pro:'Expert note'};
+function blockHTML(l,b,i){
+  if(b.p) return `<p>${md(b.p)}</p>`;
+  if(b.h) return `<h2>${esc(b.h)}</h2>`;
+  if(b.list) return `<ul>${b.list.map(x=>`<li>${md(x)}</li>`).join('')}</ul>`;
+  if(b.call) return `<aside class="lcall ${b.call}"><span class="t">${CALL[b.call]||''}</span><span class="h">${esc(b.t)}</span><span>${md(b.p)}</span></aside>`;
+  if(b.table){ const w=b.table.head.length>3;
+    return `<div class="ltab"${w?' data-noswipe style="overflow-x:auto"':''}><table${w?' style="min-width:560px"':''}><thead><tr>${b.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${b.table.rows.map(r=>`<tr>${r.map(c=>`<td>${md(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` }
+  const k=l.id+':'+i, X=lxs(k); let inner='';
+  if(b.quiz){ const q=b.quiz, a=X.a, ans=a!=null, right=a===q.a;
+    inner=xh('Question')+`<div class="lx-q">${md(q.q)}</div>${q.fell?`<div class="lx-fell" lang="en">${esc(q.fell)}</div>`:''}
+      <div class="lx-opts">${q.o.map((o,j)=>{ const c=!ans?'':j===q.a?'ok':j===a?'no':'dim';
+        return `<button class="lopt ${c}" data-act="lq" data-k="${k}" data-o="${j}"${ans?' disabled':''}><span class="mk">${c==='ok'?LI.chk:c==='no'?LI.x:'ABCDE'[j]}</span><span>${md(o)}</span></button>` }).join('')}</div>
+      ${ans?`<div class="lwhy"><span class="v${right?'':' no'}">${right?['That’s it.','Exactly.','Right.'][i%3]:'Not quite.'}</span><span>${md(q.why)}</span></div>`:''}`;
+  }
+  else if(b.sort){ const so=b.sort, P=X.p||{}, n=Object.keys(P).length, ok=so.items.filter((it,j)=>P[j]===it[1]).length;
+    inner=xh('Exercise',n?`${ok} of ${n} right`:'')+`<div class="lx-q">${md(so.prompt)}</div><div class="lsort">${so.items.map((it,j)=>{ const p=P[j], st=p==null?'':p===it[1]?'ok':'no';
+      return `<div class="lsrow ${st}"><span class="t">${md(it[0])}</span><div class="seg" role="group">${so.cats.map((c,ci)=>`<button data-act="ls" data-k="${k}" data-i="${j}" data-c="${ci}" class="${p==null?'':ci===it[1]?'ok':ci===p?'no':''}"${p!=null?' disabled':''}>${esc(c)}</button>`).join('')}</div>${p!=null?`<span class="w">${md(it[2])}</span>`:''}</div>` }).join('')}</div>`;
+  }
+  else if(b.order){ const o=b.order, n=o.items.length;
+    if(!X.sh){ let sh; do{ sh=[...o.items.keys()].sort(()=>Math.random()-.5) }while(n>1&&sh.every((v,j)=>v===j)); X.sh=sh }
+    const sq=X.s||[], full=sq.length===n, good=sq.filter((v,j)=>v===j).length;
+    inner=xh('Exercise',full?`${good} of ${n} in place`:'')+`<div class="lx-q">${md(o.prompt)}</div>
+      <div class="lord">${o.items.map((_,j)=>{ const v=sq[j]; if(v==null) return `<div class="lslot wait"><span class="i">${j+1}</span><span>${j===sq.length?'Tap a card below':''}</span></div>`;
+        return `<div class="lslot ${full?(v===j?'ok':'no'):''}"><span class="i">${full?(v===j?LI.chk:LI.x):j+1}</span><span>${md(o.items[v])}</span></div>` }).join('')}</div>
+      ${full?`<div class="lwhy"><span class="v${good===n?'':' no'}">${good===n?'Exactly right.':'Close. Here’s the usual order:'}</span>${good===n?'':`<ol style="margin:0;padding-left:20px">${o.items.map(t=>`<li>${md(t)}</li>`).join('')}</ol>`}<span>${md(o.why)}</span><button class="btn sm ghost" data-act="lo-reset" data-k="${k}">Start again</button></div>`
+        :`<div class="lord-pool">${X.sh.filter(v=>!sq.includes(v)).map(v=>`<button class="lchip" data-act="lo" data-k="${k}" data-i="${v}">${md(o.items[v])}</button>`).join('')}</div>${sq.length?`<div style="margin-top:var(--s3)"><button class="btn sm ghost" data-act="lo-undo" data-k="${k}">Undo</button></div>`:''}`}`;
+  }
+  else if(b.flip){ const F=X.f||{}, seen=X.seen||{};
+    inner=xh('Flashcards',`${Object.keys(seen).length} of ${b.flip.cards.length} turned`)+`<div class="lx-q">Tap a card to turn it over.</div><div class="lflips">${b.flip.cards.map((c,j)=>`<button class="lflip${F[j]?' on':''}" data-act="lf" data-k="${k}" data-i="${j}" aria-pressed="${!!F[j]}" aria-label="${esc(c[0])}"><span class="in"><span class="f">${esc(c[0])}</span><span class="b">${esc(c[1])}</span></span></button>`).join('')}</div>`;
+  }
+  else if(b.clues){ const C=b.clues, F=X.f||{}, notes=[], parts=[]; let last=0;
+    C.text.replace(/\[\[(.+?)\|(.+?)\]\]/g,(m,ph,nt,off)=>{ parts.push(esc(C.text.slice(last,off))); const j=notes.length; notes.push([ph,nt]);
+      parts.push(`<span role="button" tabindex="0" class="lclue${F[j]?' on':''}${X.c===j?' cur':''}" data-act="lc" data-k="${k}" data-i="${j}">${esc(ph)}</span>`); last=off+m.length; return m });
+    parts.push(esc(C.text.slice(last)));
+    const found=Object.keys(F).length;
+    inner=xh('Find the clues',`${found} of ${notes.length} found`)+`<div class="ldoc"><div class="dt">${esc(C.title)}</div>${parts.join('')}</div>`
+      +(X.c!=null?`<div class="lnote"><span class="k">${esc(notes[X.c][0])}</span><span>${md(notes[X.c][1])}</span></div>`:`<div class="lnote idle">Tap an underlined phrase to see what it tells you.</div>`)
+      +(found===notes.length?`<div class="lwhy"><span class="v">All ${notes.length} clues found.</span></div>`:'');
+  }
+  else if(b.census){ const C=b.census, F=X.f||{}; let tot=0;
+    const rows=C.rows.map((r,ri)=>`<tr>${r.map(([v,n],ci)=>{ if(!n) return `<td><span>${esc(v)||'&nbsp;'}</span></td>`; tot++; const id=ri+','+ci;
+      return `<td><button data-act="lcen" data-k="${k}" data-c="${id}" class="${F[id]?'on':''}${X.c===id?' cur':''}">${esc(v)||'—'}</button></td>` }).join('')}</tr>`).join('');
+    let note=`<div class="lnote idle">Tap an underlined cell to see what it tells you.</div>`;
+    if(X.c){ const [ri,ci]=X.c.split(',').map(Number), [v,n]=C.rows[ri][ci]; note=`<div class="lnote"><span class="k">${esc(C.cols[ci])}${v?` · ${esc(v)}`:''}</span><span>${md(n)}</span></div>` }
+    inner=xh('Read the record',`${Object.keys(F).length} of ${tot} read`)+`<div class="lcen" data-noswipe><div class="cap">${esc(C.cap)}</div><table><thead><tr>${C.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>${note}`;
+  }
+  else if(b.check){ const on=new Set(lpro().checks?.[k]||[]);
+    inner=xh(b.check.prompt||'Checklist',`${on.size} of ${b.check.items.length}`)+`<div class="lchk">${b.check.items.map((t,j)=>`<button data-act="lchk" data-k="${k}" data-i="${j}" aria-pressed="${on.has(j)}"><span class="bx">${on.has(j)?LI.chk:''}</span><span class="tx">${md(t)}</span></button>`).join('')}</div>`;
+  }
+  else if(b.tool==='soundex') inner=sxHTML(k,X);
+  else if(b.tool==='cm') inner=cmHTML(k,X);
+  else if(b.tool==='cite') inner=citeHTML(k,X);
+  else if(b.tool==='plan') inner=planHTML(k,X);
+  else if(b.tool==='yourtree') inner=ytHTML();
+  return `<section class="lx" id="lx-${l.id}-${i}">${inner}</section>`;
+}
+function lxRe(k){ const [id,i]=k.split(':'), l=LES?.lessons[lessonIdx(id)], el=document.getElementById(`lx-${id}-${i}`); if(l&&el) el.outerHTML=blockHTML(l,l.blocks[+i],+i) }
+
+/* Soundex: first letter, then up to three digits for the consonant sounds that follow. H and W don't separate
+   letters with the same code; vowels do. */
+function soundex(name){
+  const s=String(name||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z]/g,''); if(!s) return null;
+  const cd=c=>'BFPV'.includes(c)?'1':'CGJKQSXZ'.includes(c)?'2':'DT'.includes(c)?'3':c==='L'?'4':'MN'.includes(c)?'5':c==='R'?'6':'HW'.includes(c)?'h':'0';
+  const steps=[[s[0],'',true]]; let out=s[0], prev=cd(s[0]);
+  for(const c of s.slice(1)){ const d=cd(c); let kept=false;
+    if(d==='0') prev='0'; else if(d!=='h'){ if(d!==prev&&out.length<4){ out+=d; kept=true } prev=d }
+    steps.push([c,d==='h'||d==='0'?'':d,kept]) }
+  return {code:(out+'000').slice(0,4),steps};
+}
+const treeSurnames=()=>[...new Set([...S.people.values()].map(p=>String(p.surname||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+function sxRes(v){ const r=soundex(v); if(!r) return `<p class="muted" style="margin:0">Type a surname to see its code.</p>`;
+  const sur=treeSurnames(), same=sur.filter(n=>soundex(n).code===r.code&&n.toLowerCase()!==String(v).trim().toLowerCase());
+  return `<div class="sx-out"><span class="sx-code">${r.code}</span><div class="sx-steps" aria-hidden="true">${r.steps.slice(0,14).map(([c,d,kp],j)=>`<span class="${kp?'k':d?'skip':''}">${c}<i>${j===0?'1st':d||'·'}</i></span>`).join('')}</div></div>
+    <p style="margin:0;color:var(--muted);font-size:14px;line-height:20px">${same.length?`Sounds like ${same.map(esc).join(', ')} in your tree. Search sites that use Soundex will return them together.`:'Gold letters make the code. Vowels, H and W are skipped, and repeated sounds count once.'}</p>
+    ${sur.length?`<div class="lsub">Surnames in your tree</div><div class="sx-names">${sur.slice(0,30).map(n=>`<button class="tag" data-act="lsx" data-k="" data-n="${esc(n)}" aria-pressed="${soundex(n).code===r.code}">${esc(n)}<i>${soundex(n).code}</i></button>`).join('')}</div>`:''}`;
+}
+function sxHTML(k,X){ if(X.v==null){ const h=S.people.get(homeId()); X.v=h?.surname||'Ashworth' }
+  return xh('Try it · Soundex')+`<div class="ltool"><label class="lfield">Surname<input id="sx-in" data-lin="sx" data-k="${k}" value="${esc(X.v)}" autocomplete="off" spellcheck="false" autocapitalize="words"></label><div class="ltool sx-res" style="margin:0">${sxRes(X.v)}</div></div>`;
+}
+
+/* Shared centimorgans: approximate ranges and averages after the Shared cM Project (Bettinger, v4, 2020). */
+const CMR=[['Parent or child',2376,3720,3485],['Full sibling',1613,3488,2613],['Half sibling',1160,2436,1759],['Grandparent',984,2462,1754],['Aunt or uncle',1201,2282,1740],
+  ['Great-grandparent',464,1486,887],['First cousin',396,1397,866],['Half first cousin',156,1086,449],['First cousin once removed',102,980,433],['Second cousin',41,592,229],
+  ['Second cousin once removed',14,316,122],['Third cousin',0,234,73],['Fourth cousin',0,139,35]];
+const cmX=v=>Math.sqrt(Math.max(0,v)/3720)*100;
+function cmRes(v){ const hit=CMR.filter(r=>v>=r[1]&&v<=r[2]).sort((a,b)=>Math.abs(a[3]-v)-Math.abs(b[3]-v));
+  const sum=!hit.length?`No common relationship shares ${v} cM. Check the number with the testing company.`
+    :`At <b>${v} cM</b>, the closest fits are ${hit.slice(0,3).map(r=>`<b>${r[0].toLowerCase()}</b>`).join(', ').replace(/, ([^,]*)$/,' or $1')}${hit.length>3?`, among ${hit.length} possibilities`:''}.`;
+  return `<p class="cm-sum" style="margin:0">${sum}</p><div class="cm-rows">${CMR.map(r=>`<div class="cmr${v>=r[1]&&v<=r[2]?' on':''}"><span>${r[0]}<br><span style="font:400 11px/16px var(--f-mono);color:var(--faint)">${r[1]}–${r[2]} · avg ${r[3]}</span></span><span class="bar"><span class="rg" style="left:${cmX(r[1])}%;width:${cmX(r[2])-cmX(r[1])}%"></span><span class="av" style="left:${cmX(r[3])}%"></span><span class="cm-now" style="left:${cmX(v)}%"></span></span></div>`).join('')}</div>
+  <p class="cm-note" style="margin:0">Approximate ranges and averages, after the Shared cM Project. Check exact figures with the Shared cM Project tool in your library.</p>`;
+}
+function cmHTML(k,X){ if(X.v==null) X.v=450;
+  return xh('Try it · Shared DNA')+`<div class="ltool"><div class="cm-in"><input type="range" min="0" max="3700" step="1" value="${X.v}" data-lin="cm" data-k="${k}" aria-label="Shared centimorgans"><label class="lfield" style="flex:none"><input type="number" min="0" max="3700" value="${X.v}" data-lin="cm" data-k="${k}" inputmode="numeric" aria-label="Shared centimorgans"></label><span class="muted" style="font:400 13px/20px var(--f-mono)">cM</span></div><div class="ltool cm-res" style="margin:0">${cmRes(X.v)}</div></div>`;
+}
+
+/* Citation builder */
+const CITE_EX=[
+  {n:'Census page',who:'General Register Office',what:'1881 census of England and Wales, Bolton, Lancashire',when:'3 April 1881',win:'piece 3829, folio 12, page 18, household of James Ashworth',wis:'Findmypast, image viewed 26 October 2026'},
+  {n:'Parish register',who:'Church of St Mary the Virgin, Bury',what:'Register of baptisms, 1813–1820',when:'1814',win:'entry no. 212, baptism of Hannah Kay',wis:'Lancashire Archives, Preston; image viewed on FamilySearch'},
+  {n:'Death certificate',who:'Ohio Department of Health',what:'Certificate of death, József Varga',when:'1938',win:'certificate no. 12345',wis:'Ohio History Connection, Columbus; photocopy in the family papers'},
+];
+const CITE_F=[['who','Who created it','The person or office'],['what','What it is','Title or description'],['when','When','Date made, or of the event'],['win','Where in','Page, entry, folio, image'],['wis','Where is','Archive, or website and date viewed']];
+function citeOut(X){ const f=k=>String(X[k]||'').trim(); const ph=t=>`<span class="ph">[${t}]</span>`;
+  return `${f('who')?esc(f('who')):ph('who')}, <i>${f('what')?esc(f('what')):ph('what')}</i>, ${f('when')?esc(f('when')):ph('when')}; ${f('win')?esc(f('win')):ph('where in')}; ${f('wis')?esc(f('wis')):ph('where is')}.` }
+const citeText=X=>{ const f=k=>String(X[k]||'').trim(); return `${f('who')}, ${f('what')}, ${f('when')}; ${f('win')}; ${f('wis')}.` };
+function citeHTML(k,X){ if(X.ex==null) Object.assign(X,CITE_EX[0],{ex:0});
+  return xh('Try it · Build a citation')+`<div class="ltool"><label class="lfield">Start from an example<select data-lch="cite-ex" data-k="${k}">${CITE_EX.map((e,j)=>`<option value="${j}"${X.ex===j?' selected':''}>${e.n}</option>`).join('')}<option value="-1"${X.ex===-1?' selected':''}>Blank, for one of my records</option></select></label>
+    <div class="lgrid2">${CITE_F.map(([f,lab,hint])=>`<label class="lfield">${lab}<input data-lin="cite" data-f="${f}" data-k="${k}" value="${esc(X[f]||'')}" placeholder="${esc(hint)}"></label>`).join('')}</div>
+    <div class="lsub">Your citation</div><div class="cite-out">${citeOut(X)}</div>
+    <div><button class="btn sm" data-act="lcite-copy" data-k="${k}">${LI.copy} Copy</button></div></div>`;
+}
+
+/* Research plan builder: reads the tree, suggests an objective and sources, and can add the plan to a person's notes. */
+const fullName=p=>[p?.given,p?.surname].map(x=>String(x||'').trim()).filter(Boolean).join(' ')||'Unnamed';
+function regionOf(place){ const s=String(place||'').toLowerCase(); if(!s) return '';
+  if(/scotland/.test(s)) return 'sco'; if(/ireland|dublin|cork|galway|mayo|ulster|belfast/.test(s)) return 'ire';
+  if(/england|wales|lancashire|yorkshire|london|cheshire|manchester|kent|devon|essex|surrey/.test(s)) return 'eng';
+  if(/hungary|magyar|budapest|szeged/.test(s)) return 'hun';
+  if(/ohio|illinois|new york|pennsylvania|usa|united states|michigan|texas|california|massachusetts/.test(s)) return 'us';
+  return 'other' }
+function planFor(id){
+  const p=S.people.get(id); if(!p) return null; const nm=fullName(p), by=year(p.birth?.date), dy=year(p.death?.date), bp=p.birth?.place||'', dp=p.death?.place||'';
+  const pars=(p.parents||[]).filter(x=>S.people.has(x)), uns=[...S.unions.values()].filter(u=>u.a===id||u.b===id), recs=[...S.sources.values()].filter(s=>(s.people||[]).includes(id)).length;
+  const living=!dy&&by&&by>new Date().getFullYear()-100&&!p.death?.place;
+  let obj;
+  if(!pars.length) obj=`Who were the parents of ${nm}${by?`, born about ${by}`:''}${bp?` in ${bp}`:''}?`;
+  else if(pars.length===1) obj=`Who was the other parent of ${nm}?`;
+  else if(!by||!bp) obj=`When and where was ${nm} born?`;
+  else if(!dy&&!living) obj=`When and where did ${nm} die?`;
+  else if(!uns.length&&!living) obj=`Did ${nm} marry, and if so, whom?`;
+  else obj=`What records survive for ${nm}’s life${bp?` in ${bp.split(',')[0]}`:''}?`;
+  const known=[];
+  known.push(`Born: ${[p.birth?.date,bp].filter(Boolean).join(', ')||'not yet known'}`);
+  if(dy||dp) known.push(`Died: ${[p.death?.date,dp].filter(Boolean).join(', ')}`);
+  known.push(`Parents: ${pars.length?pars.map(x=>fullName(S.people.get(x))).join(' and '):'not yet known'}`);
+  uns.forEach(u=>{ const o=S.people.get(u.a===id?u.b:u.a); if(o) known.push(`Partner: ${fullName(o)}${u.date?`, ${u.status==='partners'?'together from':'married'} ${u.date}`:''}${u.place?`, ${u.place}`:''}`) });
+  known.push(`Records linked in this app: ${recs}`);
+  const R=regionOf(bp), D=regionOf(dp), src=[], lo=by||((dy||1900)-60), hi=dy||(by?by+80:1950), place=bp?bp.split(',')[0]:'the birthplace';
+  const cens=(ys)=>ys.filter(y=>y>=lo&&y<=hi);
+  if(R==='eng'||R==='sco'||R==='ire'||D==='eng'||D==='sco'){
+    const start=R==='sco'?1855:R==='ire'?1864:1837;
+    if(by&&by<start) src.push(`Parish baptism registers for ${place}, ${by-3}–${by+3} (before civil registration began in ${start})`);
+    else src.push(`Birth registration index and certificate${R==='eng'?' (FreeBMD, GRO)':R==='sco'?' (ScotlandsPeople)':R==='ire'?' (IrishGenealogy.ie)':''}`);
+    const cs=R==='ire'?cens([1901,1911]):cens([1841,1851,1861,1871,1881,1891,1901,1911,1921]); if(cs.length) src.push(`Census returns: ${cs.join(', ')}. Look for the household, siblings and neighbours`);
+    if(!pars.length) src.push(`The marriage record: ${by&&by+20>=start?'from 1837 in England and Wales it names both fathers':'witnesses may be relatives'}`);
+    if(!dy||!dp) src.push('Death registration, burial register and gravestone');
+    src.push('Probate calendar and wills for parents and siblings');
+  }
+  if(R==='hun') src.push(`Catholic or Reformed parish registers for ${place}${by?`, ${by-3}–${by+3}`:''}${by&&by>=1895?', and civil registers (from October 1895)':''}`,`Hungaricana and Hungarian archive catalogs for ${place}`);
+  if(R==='us'||D==='us'){
+    const cs=cens([1850,1860,1870,1880,1900,1910,1920,1930,1940,1950]); if(cs.length) src.push(`US census returns: ${cs.join(', ')}`);
+    src.push('State birth, marriage and death records (see “Where to Write for Vital Records”)','Obituaries in local newspapers');
+    if(R&&R!=='us'&&D==='us') src.push('Naturalization papers and passenger lists, for the town of origin');
+  }
+  if(!src.length) src.push(`FamilySearch Catalog: search by place for ${bp||'each place they lived'}`,'Civil registration or church records for that place, by date','Census or census substitutes covering their lifetime');
+  src.push('Records for siblings, witnesses and neighbours (the FAN club)');
+  const d=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  const txt=`RESEARCH PLAN · ${d}\n\nObjective\n${obj}\n\nKnown facts\n${known.map(x=>'- '+x).join('\n')}\n\nWorking hypothesis\n(Your best guess, stated so it can be tested.)\n\nSources to search\n${src.map((x,j)=>`${j+1}. ${x}`).join('\n')}\n\nResults\n- `;
+  return {nm,txt};
+}
+function planHTML(k,X){
+  if(!S.people.size) return xh('Try it · Research plan')+`<p style="margin:var(--s3) 0 var(--s4);color:var(--muted)">Your tree is empty. Add yourself first, then come back to plan your first search.</p><button class="btn primary sm" data-act="new-person">Add yourself</button>`;
+  if(!X.p||!S.people.has(X.p)) X.p=homeId();
+  const pl=planFor(X.p); if(X.txt==null) X.txt=pl.txt;
+  const opts=[...S.people.entries()].sort((a,b)=>fullName(a[1]).localeCompare(fullName(b[1]))).map(([id,p])=>`<option value="${esc(id)}"${id===X.p?' selected':''}>${esc(fullName(p))}${span(p)?` (${esc(span(p))})`:''}</option>`).join('');
+  return xh('Try it · Research plan')+`<div class="ltool"><label class="lfield">Person<select data-lch="plan-p" data-k="${k}">${opts}</select></label>
+    <label class="lfield">Plan, ready to edit<textarea id="plan-txt" data-lin="plan" data-k="${k}" spellcheck="true">${esc(X.txt)}</textarea></label>
+    <div style="display:flex;gap:var(--s2);flex-wrap:wrap"><button class="btn primary sm" data-act="lplan-add" data-k="${k}">${ICON.plus} Add to ${esc(short(S.people.get(X.p)))}’s notes</button><button class="btn sm" data-go="${esc(X.p)}">Open profile</button><button class="btn sm ghost" data-act="lplan-reset" data-k="${k}">Start over</button></div></div>`;
+}
+
+/* Your tree, at a glance: the gaps worth working on first. */
+function ytHTML(){
+  if(!S.people.size) return xh('Your tree')+`<p style="margin:var(--s3) 0 var(--s4);color:var(--muted)">Your tree is empty. Start with yourself: name, birth date and birthplace.</p><button class="btn primary sm" data-act="new-person">Add yourself</button>`;
+  const ps=[...S.people.entries()], src=[...S.sources.values()];
+  const noBirth=ps.filter(([,p])=>!year(p.birth?.date)||!p.birth?.place).length, noRec=ps.filter(([id])=>!src.some(s=>(s.people||[]).includes(id))).length;
+  const home=homeId(), seen=new Set([home]), q=[home], gaps=[];
+  while(q.length&&gaps.length<4){ const id=q.shift(), p=S.people.get(id); if(!p) continue; const pars=(p.parents||[]).filter(x=>S.people.has(x)); if(pars.length<2) gaps.push(id); pars.forEach(x=>{ if(!seen.has(x)){ seen.add(x); q.push(x) } }) }
+  return xh('Your tree')+`<div class="ltool"><div class="yt-grid"><div class="yt-stat"><b>${ps.length}</b><span>${ps.length===1?'person':'people'} in your tree</span></div><div class="yt-stat"><b>${noBirth}</b><span>missing a birth date or place</span></div><div class="yt-stat"><b>${noRec}</b><span>with no records linked yet</span></div></div>
+    ${gaps.length?`<div class="lsub">Your direct line stops here</div><p style="margin:0;color:var(--muted);font-size:14px;line-height:20px">The closest generations with a missing parent. Work on these first.</p><div class="yt-who">${gaps.map(id=>chip(id)).join('')}</div>`:''}</div>`;
+}
+
+function lessonInput(el){ const k=el.dataset.k, X=lxs(k), box=el.closest('.lx');
+  if(el.dataset.lin==='sx'){ X.v=el.value; box.querySelector('.sx-res').innerHTML=sxRes(X.v) }
+  if(el.dataset.lin==='cm'){ const v=Math.max(0,Math.min(3700,Math.round(+el.value||0))); X.v=v; box.querySelectorAll('[data-lin="cm"]').forEach(x=>{ if(x!==el) x.value=v }); box.querySelector('.cm-res').innerHTML=cmRes(v) }
+  if(el.dataset.lin==='cite'){ X[el.dataset.f]=el.value; box.querySelector('.cite-out').innerHTML=citeOut(X) }
+  if(el.dataset.lin==='plan') X.txt=el.value;
+}
+function lessonChange(el){ const k=el.dataset.k, X=lxs(k);
+  if(el.dataset.lch==='cite-ex'){ const j=+el.value; if(j<0) Object.assign(X,{who:'',what:'',when:'',win:'',wis:'',ex:-1}); else Object.assign(X,CITE_EX[j],{ex:j}); lxRe(k) }
+  if(el.dataset.lch==='plan-p'){ X.p=el.value; X.txt=null; lxRe(k) }
+}
+function lessonScroll(){ if(state.view!=='lesson') return; const m=$('#main'), bar=m.querySelector('.lprog i'); if(!bar) return; const max=m.scrollHeight-m.clientHeight; bar.style.width=(max>0?Math.min(100,m.scrollTop/max*100):100)+'%' }
+$('#main').addEventListener('scroll',lessonScroll,{passive:true});
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches?.('[role="button"][data-act]')){ e.preventDefault(); e.target.click() } });
+const LESSON_ACT={
+  lq:t=>{ const k=t.dataset.k, X=lxs(k); if(X.a!=null) return; X.a=+t.dataset.o; haptic(); lxRe(k) },
+  ls:t=>{ const k=t.dataset.k, X=lxs(k); (X.p||(X.p={}))[t.dataset.i]=+t.dataset.c; haptic(); lxRe(k) },
+  lo:t=>{ const k=t.dataset.k, X=lxs(k); (X.s||(X.s=[])).push(+t.dataset.i); haptic(); lxRe(k) },
+  'lo-undo':t=>{ const k=t.dataset.k; lxs(k).s?.pop(); lxRe(k) },
+  'lo-reset':t=>{ const k=t.dataset.k, X=lxs(k); X.s=[]; X.sh=null; lxRe(k) },
+  lf:t=>{ const X=lxs(t.dataset.k), j=t.dataset.i; X.f=X.f||{}; X.seen=X.seen||{}; X.f[j]=!X.f[j]; X.seen[j]=1; t.classList.toggle('on',X.f[j]); t.setAttribute('aria-pressed',String(X.f[j]));
+    const sc=t.closest('.lx').querySelector('.sc'); if(sc) sc.textContent=`${Object.keys(X.seen).length} of ${t.parentElement.children.length} turned` },
+  lc:t=>{ const k=t.dataset.k, X=lxs(k), j=+t.dataset.i; (X.f||(X.f={}))[j]=1; X.c=j; haptic(); lxRe(k) },
+  lcen:t=>{ const k=t.dataset.k, X=lxs(k), c=t.dataset.c; (X.f||(X.f={}))[c]=1; X.c=c; haptic(); lxRe(k) },
+  lchk:async t=>{ const k=t.dataset.k, j=+t.dataset.i, p=lpro(), ch={...(p.checks||{})}, on=new Set(ch[k]||[]); on.has(j)?on.delete(j):on.add(j); ch[k]=[...on]; haptic(); await put('meta','lessons',{...p,checks:ch}) },
+  lsx:t=>{ const box=t.closest('.lx'), inp=box.querySelector('#sx-in'); inp.value=t.dataset.n; lessonInput(inp) },
+  'lcite-copy':async t=>{ const txt=citeText(lxs(t.dataset.k)); try{ await navigator.clipboard.writeText(txt); toast('Citation copied.') }catch{ toast('Couldn’t copy. Select the citation and copy it instead.') } },
+  'lplan-add':async t=>{ const X=lxs(t.dataset.k), p=S.people.get(X.p); if(!p) return; const txt=String(X.txt||'').trim(); if(!txt) return toast('The plan is empty.');
+    await patch('people',X.p,{notes:(p.notes?String(p.notes).replace(/\s+$/,'')+'\n\n':'')+txt}); haptic(); toast(`Added to ${short(p)}’s notes.`) },
+  'lplan-reset':t=>{ const k=t.dataset.k; lxs(k).txt=null; lxRe(k) },
+  ldone:async t=>{ const id=t.dataset.id; haptic(); pulseAfter('.ldone-b'); await setDone(id,!ldone(id)) },
+  lnext:async t=>{ const id=t.dataset.id, to=t.dataset.to; if(!ldone(id)) setDone(id,true); go(to?'learn/'+to:'learn') },
+};
 
 /* ---------- modals ---------- */
 const dlg=$('#dlg'), body=$('#dlg-body');
@@ -2680,6 +3192,7 @@ const ACT={
     if(await saveFile(`book-of-the-dead-full-backup-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(o))){ closeModal(); if(miss) toast(`${miss} file${miss>1?'s':''} couldn’t be packed (offline or missing).`) } },
   'exp-ged':async()=>{ if(await saveFile(`family-tree-${new Date().toISOString().slice(0,10)}.ged.txt`,storeToGed())) closeModal() },
   'edit-person':()=>openPersonEditor(state.id),
+  'cm-edit':t=>{ closeCardMenu(); openPersonEditor(t.dataset.id) },
   'show-in-tree':()=>{ state.pendingCenter=state.id; go('tree') },
   'edit-fam':()=>{ state.editFam=!state.editFam; render() },
   back:()=>go(state.backTo||'people','in-left'),
@@ -2762,13 +3275,14 @@ const ACT={
   libtag:t=>{ const k=t.dataset.t; state.libTags.has(k)?state.libTags.delete(k):state.libTags.add(k); pulseAfter(`.tag[data-t="${CSS.escape(k)}"]`); render() },
   libclear:()=>{ state.libTags.clear(); state.libQ=''; state.libSaved=false; render() },
   libfacets:()=>{ state.libOpen=!state.libOpen; render() },
+  ...LESSON_ACT,
   libsaved:()=>{ state.libSaved=!state.libSaved; render() },
   libsave:async t=>{ const id=t.dataset.id; haptic(); pulseAfter(`.star[data-id="${CSS.escape(id)}"]`); if(S.saved.has(id)) await remove('saved',id); else await put('saved',id,{at:Date.now()}) },
 };
 document.addEventListener('click',e=>{
   const cg=e.target.closest('[data-cgo]'); if(cg){ go(cg.dataset.cgo); return }
   const t=e.target.closest('[data-act],[data-go]'); if(!t) return;
-  if(t.dataset.go!=null&&!t.dataset.act){ if(dlg.open) closeModal(); if(t.classList.contains('tab')) goHome(t.dataset.go); go(t.dataset.go); return }
+  if(t.dataset.go!=null&&!t.dataset.act){ if(dlg.open) closeModal(); if(t.classList.contains('tab')){ goHome(t.dataset.go); return go(tabTok(t.dataset.go)) } go(t.dataset.go); return }
   const fn=ACT[t.dataset.act]; if(fn){ e.preventDefault(); fn(t,e) }
 });
 document.addEventListener('keydown',e=>{ const cg=e.target.closest?.('[data-cgo]'); if(cg&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); go(cg.dataset.cgo) } });
@@ -2784,10 +3298,12 @@ document.addEventListener('submit',async e=>{
 document.addEventListener('input',e=>{
   if(e.target.id==='people-q'){ state.q=e.target.value; render() }
   if(e.target.id==='lib-q'){ state.libQ=e.target.value; render() }
+  if(e.target.dataset?.lin) lessonInput(e.target);
   if(e.target.id==='pick-q') fillPick(e.target.value);
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(t.dataset?.lch) lessonChange(t);
   if(t.id==='ff-hunt'){ $('#ff-where-wrap').hidden=!t.checked; if(t.checked) $('#ff-where').focus() }
   if(t.id==='d-file'){ docCtx.file=t.files[0]||null; $('#d-fname').textContent=docCtx.file?.name||''; if(docCtx.file&&!$('#d-title').value) $('#d-title').value=docCtx.file.name.replace(/\.[^.]+$/,'') }
   if(t.id==='d-addp'&&t.value){ docCtx.draft.people.push(t.value); renderDocLinks() }
@@ -2834,8 +3350,9 @@ function swipeTargets(){
     return { prev:i>0?()=>{ state.ptab=PTABS[i-1]; navDir='in-left'; render() }:()=>go(state.backTo||'people','in-left'),
              next:i<PTABS.length-1?()=>{ state.ptab=PTABS[i+1]; navDir='in-right'; render() }:null };
   }
-  const i=ORDER.indexOf(state.view);
-  return { prev:i>0?()=>{ goHome(ORDER[i-1]); go(ORDER[i-1],'in-left') }:null, next:i>=0&&i<ORDER.length-1?()=>{ goHome(ORDER[i+1]); go(ORDER[i+1],'in-right') }:null };
+  if(state.view==='lesson'){ const k=lessonIdx(state.lessonId), nx=LES?.lessons[k+1]; return { prev:()=>go('learn','in-left'), next:nx?()=>go('learn/'+nx.id,'in-right'):null } }
+  const i=ORDER.indexOf(state.view==='learn'?'library':state.view);
+  return { prev:i>0?()=>{ goHome(ORDER[i-1]); go(tabTok(ORDER[i-1]),'in-left') }:null, next:i>=0&&i<ORDER.length-1?()=>{ goHome(ORDER[i+1]); go(tabTok(ORDER[i+1]),'in-right') }:null };
 }
 // Follows the finger, rubber-bands where there is nowhere to go, and commits on distance or a flick.
 function bindSwipe(){
@@ -2941,7 +3458,7 @@ async function boot(){
   splash(); route();
   // this device's copy first, so the tree opens at once, with or without internet
   const had=loadMirror(); if(had){ MODE='cached'; READY=true }
-  render(); loadLibrary(); await loadLocalFiles();
+  render(); loadLibrary(); loadLessons(); await loadLocalFiles();
   const c=await getClaude();
   if(c){ if(!await connect(c,had)&&!had){ loadLocal(); READY=true } try{ DL=await c.use('downloads') }catch{} }
   else { ENV='web'; webExtras();
