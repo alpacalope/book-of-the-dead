@@ -14,6 +14,7 @@
 <script src="config.js"></script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>try{const t=localStorage.getItem('bod-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IM+Fell+English:ital@0;1&family=EB+Garamond&display=swap">
@@ -40,7 +41,7 @@
 }
 /* Light: warm paper with the same gold, darkened a step so it reads on a pale ground. Follows the system setting. */
 @media (prefers-color-scheme:light){
-  :root{
+  :root:not([data-theme="dark"]){
     --bg:#f6f0e2; --surface:#fffaf0; --surface-2:#f0e7d2; --surface-3:#e5d9bf;
     --line:#e2d5ba; --line-2:#ccb991;
     --ink:#2a2116; --muted:#74654a; --faint:#9a896a;
@@ -51,6 +52,17 @@
     --bad:#b0532c; --bad-soft:rgba(176,83,44,.1);
     color-scheme:light;
   }
+}
+:root[data-theme="light"]{
+    --bg:#f6f0e2; --surface:#fffaf0; --surface-2:#f0e7d2; --surface-3:#e5d9bf;
+    --line:#e2d5ba; --line-2:#ccb991;
+    --ink:#2a2116; --muted:#74654a; --faint:#9a896a;
+    --gold:#b8840f; --gold-ink:#8c6307; --straw:#9a7412; --hazel:#a8792b; --mocha:#6b4f26; --root:#b38b47;
+    --gold-soft:rgba(184,132,15,.13); --on-gold:#fffaf0; --mark:#2a2116;
+    --shadow:0 16px 48px rgba(70,48,12,.16);
+    --splash-hi:#fffaf0;
+    --bad:#b0532c; --bad-soft:rgba(176,83,44,.1);
+    color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -729,6 +741,12 @@ main.is-chart{overflow:auto;touch-action:auto}
 .ctop-quiet{margin-left:auto;display:inline-flex;align-items:center;gap:var(--s2);font-size:13px;line-height:20px;color:var(--faint)}
 .ctop-quiet button{color:var(--muted);padding:var(--s1) 0}
 .ctop-quiet button:hover{color:var(--ink)}
+.czoom{display:inline-flex;align-items:center;gap:var(--s1)}
+.czoom button{min-width:28px;height:28px;padding:0 var(--s1);border-radius:999px;font-variant-numeric:tabular-nums}
+.czoom button:hover{background:var(--surface-2)}
+#cz-pct{min-width:48px;font:400 12px/16px var(--f-mono)}
+.chart-wrap{touch-action:pan-x pan-y}
+.chart{width:max-content}
 .chart-row{display:flex;align-items:center}
 .chart .dk{display:flex;flex-direction:column;position:relative;padding-right:48px}
 .chart .dk::after{content:"";position:absolute;right:0;top:50%;width:48px;border-top:1px solid var(--root)}
@@ -2627,6 +2645,10 @@ const LESSON_ACT={
 
 /* ---------- settings ---------- */
 let LAST_SAVE=0;
+const themePref=()=>{ try{ const t=localStorage.getItem('bod-theme'); return t==='light'||t==='dark'?t:'system' }catch{ return document.documentElement.dataset.theme||'system' } };
+function setTheme(v){ try{ v==='system'?localStorage.removeItem('bod-theme'):localStorage.setItem('bod-theme',v) }catch{}
+  const de=document.documentElement; if(v==='system') delete de.dataset.theme; else de.dataset.theme=v;
+  const bg=getComputedStyle(de).getPropertyValue('--bg').trim(); document.querySelector('meta[name="theme-color"]')?.setAttribute('content',bg) }
 const agoText=t=>{ if(!t) return ''; const s=Math.round((Date.now()-t)/1000); return s<10?'just now':s<60?`${s} seconds ago`:s<3600?`${Math.round(s/60)} min ago`:new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}) };
 function settingsHTML(){
   const n=OUT.length+FQ.length, off=MODE!=='local'&&(!SYNC.online||(!DB&&MODE==='cached'));
@@ -2640,6 +2662,7 @@ function settingsHTML(){
   const ex=[...S.people.values()].some(p=>p.example);
   return `<div class="page narrow"><div class="list-head"><h1>Settings</h1></div><div class="sets stagger">
     <section><h2>Account</h2><div class="setc">${acct}</div></section>
+    <section><h2>Appearance</h2><div class="setc"><div class="setr"><div class="tx"><b>Theme</b><span>System follows your device’s light or dark setting.</span></div><div class="seg" role="group" aria-label="Theme">${[['light','Light'],['dark','Dark'],['system','System']].map(([v,l])=>`<button data-act="theme" data-v="${v}" aria-pressed="${themePref()===v}">${l}</button>`).join('')}</div></div></div></section>
     <section><h2>Saving</h2><div class="setc"><div class="setr"><div class="tx"><b class="st"><span class="sd ${status[0]}"></span><span id="set-st">${status[1]}</span></b><span>${status[2]}${LAST_SAVE?` Last saved by hand ${agoText(LAST_SAVE)}.`:''}</span></div><div class="btns"><button class="btn sm primary" data-act="save-now">Save now</button></div></div></div></section>
     <section><h2>Your data</h2><div class="setc">
       <div class="setr"><div class="tx"><b>Export</b><span>Download your tree as a file, with or without photos and scans. Keep it as a backup, or move it to another copy of the app.</span></div><div class="btns"><button class="btn sm" data-act="export">Export</button></div></div>
@@ -2838,7 +2861,29 @@ async function submitDoc(form){
 
 /* ---------- chart: the research tree ---------- */
 // A sideways pedigree for reading detail: the starting person on the left, each generation of parents to the right.
-const CH_DEPTH=3; // up to great-grandparents; "Earlier" re-centres on whoever is at the edge
+const CH_DEPTH=3; // up to great-grandparents at 100%; "Earlier" re-centres on whoever is at the edge
+// Zoom: each halving of the zoom has room for one more generation, so zooming out keeps revealing ancestors.
+const chartZ=()=>state.cz||1;
+const chDepth=()=>CH_DEPTH+Math.max(0,Math.floor(Math.log2(1/chartZ())+0.3));
+let czT=0;
+function setChartZoom(z,px,py,anim){
+  const c=$('.chart'), m=$('#main'); if(!c||!m) return;
+  const z0=chartZ(); z=Math.max(0.03,Math.min(2,z)); if(Math.abs(z-z0)<1e-4) return;
+  const d0=chDepth(), mr=m.getBoundingClientRect(), cr=c.getBoundingClientRect();
+  const ux=(mr.left+px-cr.left)/z0, uy=(mr.top+py-cr.top)/z0;
+  state.cz=z; c.style.zoom=z;
+  const cr2=c.getBoundingClientRect(); m.scrollLeft+=cr2.left+ux*z-(mr.left+px); m.scrollTop+=cr2.top+uy*z-(mr.top+py);
+  const lab=$('#cz-pct'); if(lab) lab.textContent=Math.round(z*100)+'%';
+  if(chDepth()!==d0){ clearTimeout(czT); czT=setTimeout(chartRedepth,anim?0:220) }
+}
+// More (or fewer) generations: re-render, keeping the starting person where it was on screen.
+function chartRedepth(){ const b0=$('.cbox.root')?.getBoundingClientRect(); render(); const m=$('#main'), b1=$('.cbox.root')?.getBoundingClientRect(); if(b0&&b1&&m){ m.scrollLeft+=b1.left-b0.left; m.scrollTop+=b1.top-b0.top } }
+function chartFit(){ const m=$('#main'); if(!$('.chart')||!m) return;
+  // fit what's drawn, redraw if that zoom shows a different number of generations, and repeat until it settles
+  for(let i=0;i<6;i++){ const c=$('.chart'), z=chartZ(), r=c.getBoundingClientRect(), W=r.width/z, H=r.height/z;
+    const fz=Math.max(0.03,Math.min(1,(m.clientWidth-48)/W,(m.clientHeight-120)/H)); const d0=chDepth(); state.cz=fz; c.style.zoom=fz; if(chDepth()!==d0) render(); else break }
+  const lab=$('#cz-pct'); if(lab) lab.textContent=Math.round(chartZ()*100)+'%';
+  const r=$('.chart').getBoundingClientRect(), mr=m.getBoundingClientRect(); m.scrollLeft+=r.left-mr.left-24; m.scrollTop+=r.top-mr.top-80 }
 let chartShift=null, lastChartRoot=null, chartRefocus=false;
 const chartCol=new Set(); // cards folded to their header; everything starts open
 let chartFam=false; try{ chartFam=localStorage.getItem('bod-chart-fam')==='1' }catch{}
@@ -2879,7 +2924,7 @@ function chartNode(id,depth,seen){
   const sexR=x=>({M:0,F:1})[S.people.get(x)?.sex]??2;
   const ps=[...R.par.get(id)].sort((a,b)=>sexR(a)-sexR(b));
   let right='';
-  if(depth<CH_DEPTH){
+  if(depth<chDepth()){
     const items=ps.map(x=>chartNode(x,depth+1,seen)).filter(Boolean).map(x=>x);
     if(ps.length<2) items.push(`<div class="pn"><button class="cadd" data-act="chart-add" data-id="${esc(id)}"><span class="pl">+</span>Add parent</button></div>`);
     right=`<div class="pk">${items.join('')}</div>`;
@@ -2893,7 +2938,7 @@ function chartHTML(){
   return `<div class="chart-wrap" id="chart-wrap" data-noswipe>${hint}
     <div class="chart-top">${back?`<button class="btn sm" data-act="chart-to" data-id="${esc(back)}"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(short(S.people.get(back)))}</button>`:''}
       <button class="cswitch" data-act="chart-fam" role="switch" aria-checked="${chartFam}"><span class="sw" aria-hidden="true"></span>View spouse and children</button>
-      <span class="ctop-quiet"><button data-act="chart-all" data-v="1">Expand all</button><span aria-hidden="true">·</span><button data-act="chart-all" data-v="0">Collapse all</button></span></div>
+      <span class="ctop-quiet"><button data-act="chart-all" data-v="1">Expand all</button><span aria-hidden="true">·</span><button data-act="chart-all" data-v="0">Collapse all</button><span aria-hidden="true">·</span><span class="czoom"><button data-act="cz" data-v="-1" aria-label="Zoom out">−</button><button data-act="cz-reset" id="cz-pct" title="Back to 100%">${Math.round(chartZ()*100)}%</button><button data-act="cz" data-v="1" aria-label="Zoom in">+</button></span><span aria-hidden="true">·</span><button data-act="cz-fit">Fit</button></span></div>
     <div class="chart"><div class="chart-row">${chartFam?chartFamHTML(root):''}${chartNode(root,0,new Set())}</div></div></div>`;
 }
 // Desktop: drag the background to move around the chart. Re-centring slides the new chart in.
@@ -2905,7 +2950,14 @@ function bindChart(){
     const b=$('.cbox.root'); if(b){ const mr=main.getBoundingClientRect(), br=b.getBoundingClientRect(); main.scrollTop=Math.max(0,main.scrollTop+br.top-mr.top-(mr.height-br.height)/2); main.scrollLeft=chartFam?Math.max(0,main.scrollLeft+br.left-mr.left-Math.min(mr.width*.45,560)):0 }
     if(chartShift&&!REDUCED.matches) $('.chart')?.animate([{opacity:0,transform:'translateX(24px)'},{opacity:1,transform:'none'}],{duration:380,easing:'cubic-bezier(.32,.72,0,1)'});
     chartShift=null; lastChartRoot=root }
+  const cz=$('.chart'); if(cz) cz.style.zoom=chartZ();
   if(w._bound) return; w._bound=true;
+  w.addEventListener('wheel',e=>{ if(!e.ctrlKey&&!e.metaKey) return; e.preventDefault(); const r=main.getBoundingClientRect(); setChartZoom(chartZ()*Math.exp(-e.deltaY*(e.deltaMode?0.05:Math.abs(e.deltaY)>=50?0.0015:0.01)),e.clientX-r.left,e.clientY-r.top) },{passive:false});
+  let pz=null; const two=e=>{ const [a,b]=e.touches, r=main.getBoundingClientRect(); return {d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),x:(a.clientX+b.clientX)/2-r.left,y:(a.clientY+b.clientY)/2-r.top} };
+  w.addEventListener('touchstart',e=>{ if(e.touches.length===2){ const t=two(e); pz={d:t.d,z:chartZ()} } },{passive:true});
+  w.addEventListener('touchmove',e=>{ if(!pz||e.touches.length!==2) return; e.preventDefault(); const t=two(e); setChartZoom(pz.z*t.d/Math.max(1,pz.d),t.x,t.y) },{passive:false});
+  w.addEventListener('touchend',e=>{ if(pz&&e.touches.length<2) pz=null });
+  w.addEventListener('gesturestart',e=>e.preventDefault());
   let d=null;
   w.addEventListener('pointerdown',e=>{ if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('button,a,summary,details,.ntext')) return; d={x:e.clientX,y:e.clientY,l:main.scrollLeft,t:main.scrollTop}; w.classList.add('dragging') });
   addEventListener('pointermove',e=>{ if(!d) return; main.scrollLeft=d.l-(e.clientX-d.x); main.scrollTop=d.t-(e.clientY-d.y) });
@@ -3334,6 +3386,10 @@ const ACT={
   libfacets:()=>{ state.libOpen=!state.libOpen; render() },
   ...LESSON_ACT,
   'save-now':()=>{ haptic(); saveNow() },
+  theme:t=>{ haptic(); setTheme(t.dataset.v); render() },
+  cz:t=>{ const m=$('#main'); setChartZoom(chartZ()*(+t.dataset.v>0?1.25:0.8),m.clientWidth/2,m.clientHeight/2,true) },
+  'cz-fit':()=>chartFit(),
+  'cz-reset':()=>{ const m=$('#main'); setChartZoom(1,m.clientWidth/2,m.clientHeight/2,true) },
   libsaved:()=>{ state.libSaved=!state.libSaved; render() },
   libsave:async t=>{ const id=t.dataset.id; haptic(); pulseAfter(`.star[data-id="${CSS.escape(id)}"]`); if(S.saved.has(id)) await remove('saved',id); else await put('saved',id,{at:Date.now()}) },
 };
