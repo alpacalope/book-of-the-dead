@@ -655,6 +655,22 @@ main.is-canvas{overflow:hidden}
 .lfoot .row .sp{flex:1}
 .ldone-b[aria-pressed="true"]{background:var(--gold-soft)}
 
+/* settings */
+.sets{display:grid;gap:var(--s8)}
+.sets h2{font:500 12px/16px var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--faint);margin-bottom:var(--s3)}
+.setc{border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.setr{display:flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s5);flex-wrap:wrap}
+.setr+.setr{border-top:1px solid var(--line)}
+.setr .tx{flex:1 1 220px;min-width:0;display:grid;gap:2px}
+.setr .tx b{font-weight:600}
+.setr .tx span{color:var(--muted);font-size:14px;line-height:20px}
+.setr .st{display:inline-flex;align-items:center;gap:var(--s2)}
+.setr .sd{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none}
+.setr .sd.wait{background:var(--straw);animation:breathe 1.2s ease-in-out infinite}
+.setr .sd.off{background:var(--faint)}
+.setr .btns{display:flex;gap:var(--s2);flex-wrap:wrap}
+.setv{font:400 12px/16px var(--f-mono);color:var(--faint);text-align:center}
+
 /* dialog */
 dialog{border:1px solid var(--line-2);padding:0;border-radius:var(--r-xl);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto}
 dialog[open]{animation:dlgIn .4s var(--ease)}
@@ -804,7 +820,7 @@ main.is-chart{overflow:auto;touch-action:auto}
 
 /* bottom tab bar */
 .tabbar{display:flex;justify-content:center;background:var(--bg);border-top:1px solid var(--line);padding:var(--s1) max(8px,env(safe-area-inset-right,0px)) calc(var(--s1) + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));position:relative;z-index:20}
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);width:100%;max-width:620px}
+.tabs{display:grid;grid-template-columns:repeat(7,1fr);width:100%;max-width:700px}
 .tab{position:relative;display:grid;justify-items:center;align-content:center;gap:2px;height:56px;color:var(--muted);font:500 11px/14px var(--f-body);letter-spacing:.01em;transition:color .3s var(--ease),transform .18s var(--ease)}
 .tab .ico{position:relative;width:26px;height:26px;display:grid;place-items:center}
 .tab svg{width:24px;height:24px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -826,6 +842,8 @@ main.is-chart{overflow:auto;touch-action:auto}
 .tab.go[data-go="people"] svg{animation:icHop .5s var(--spring)}
 .tab.go[data-go="find"] svg{transform-origin:40% 40%;animation:icLook .6s var(--ease)}
 .tab.go[data-go="library"] svg{animation:icOpen .5s var(--spring)}
+.tab.go[data-go="settings"] svg{animation:icTurn .6s var(--spring)}
+@keyframes icTurn{from{transform:rotate(-60deg)}to{transform:none}}
 .tab.go[data-go="archive"] svg .lid{animation:icLid .55s var(--spring)}
 @keyframes icGrow{0%{transform:scaleY(.55)}100%{transform:none}}
 @keyframes icHop{0%{transform:translateY(0)}35%{transform:translateY(-4px)}100%{transform:none}}
@@ -1227,7 +1245,7 @@ function route(){
   if(h==='learn'){ state.view='learn'; setPane('learn'); return }
   if(h.startsWith('learn/')){ state.view='lesson'; state.lessonId=h.slice(6); setPane('learn'); return }
   if(h==='library') setPane('links');
-  if(h==='people'||h==='find'||h==='library'||h==='archive'||h==='tree'||h==='chart'||!h){state.view=h||'tree'; return}
+  if(h==='people'||h==='find'||h==='library'||h==='archive'||h==='settings'||h==='tree'||h==='chart'||!h){state.view=h||'tree'; return}
   const [id,m]=h.split('.'); if(state.id!==id){state.filter='All';state.editFam=false}
   state.view='person'; state.id=id; state.mode=m==='circle'?'circle':'profile';
 }
@@ -1238,7 +1256,7 @@ window.addEventListener('hashchange',()=>{route();render()});
 let rq=0;
 function scheduleRender(){ if(!rq) rq=requestAnimationFrame(()=>{rq=0;render()}) }
 // View transitions: tabs slide in the direction of travel; opening a person pushes in from the right, going back slides from the left.
-const ORDER=['tree','chart','people','find','library','archive'];
+const ORDER=['tree','chart','people','find','library','archive','settings'];
 let lastKey=null, navDir=null;
 const viewKey=()=>!READY?'loading':state.view==='lesson'?'lesson:'+state.lessonId:state.view==='person'?`p:${state.id}:${state.mode}:${state.mode==='circle'?'':PTABS.includes(state.ptab)?state.ptab:'timeline'}`:state.view;
 function dirFor(a,b){
@@ -1274,6 +1292,7 @@ function render(){
   else if(state.view==='learn') html=learnHTML();
   else if(state.view==='lesson') html=lessonHTML(state.lessonId);
   else if(state.view==='archive') html=archiveHTML();
+  else if(state.view==='settings') html=settingsHTML();
   else if(state.view==='person') html=personHTML(state.id);
   main.innerHTML=`<div class="view">${html}</div>`;
   if(anim){ main.scrollTop=0; main.scrollLeft=0; playIn(main.firstElementChild,anim,true); afterRender(); if(state.view==='person') bindDrop(); if(state.view==='chart') bindChart(); return }
@@ -1303,12 +1322,13 @@ const NAVI={
   people:'<path class="f" d="M15.6 14.3c2.7.1 4.6 1.9 5.1 4.9h-3.9"/><circle class="f" cx="16.2" cy="8.6" r="2.7"/><circle class="f" cx="9" cy="8" r="3.2"/><path class="f" d="M3 19.4c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3z"/>',
   find:'<circle class="f" cx="10.5" cy="10.5" r="6.2"/><path d="M15.2 15.2l5.3 5.3"/>',
   library:'<path class="f" d="M12 6.8c-2.6-1.9-5.2-2.2-8-1.3v13c2.8-.9 5.4-.6 8 1.3z"/><path class="f" d="M12 6.8c2.6-1.9 5.2-2.2 8-1.3v13c-2.8-.9-5.4-.6-8 1.3z"/>',
+  settings:'<path class="f" d="M10.4 2.8h3.2l.5 2.4 1.6.9 2.3-.8 1.6 2.8-1.8 1.6v1.8l1.8 1.6-1.6 2.8-2.3-.8-1.6.9-.5 2.4h-3.2l-.5-2.4-1.6-.9-2.3.8-1.6-2.8 1.8-1.6v-1.8L4.4 8.1 6 5.3l2.3.8 1.6-.9z"/><circle class="cut" cx="12" cy="12" r="2.8" fill="none"/>',
   archive:'<rect class="f lid" x="3.4" y="4.2" width="17.2" height="4.4" rx="1.2" style="transform-box:fill-box;transform-origin:0 100%"/><path class="f" d="M5 8.6v9.9a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V8.6z"/><path class="cut" d="M10 12.8h4"/>'
 };
 let navCur=null;
 function renderNav(){
   const h=READY?allHunts().length:0;
-  const items=[['tree','Tree'],['chart','Chart'],['people','People'],['find','Research',h],['library','Library'],['archive','Archive',READY?S.archive.size:0,'quiet']];
+  const items=[['tree','Tree'],['chart','Chart'],['people','People'],['find','Research',h],['library','Library'],['archive','Archive',READY?S.archive.size:0,'quiet'],['settings','Settings']];
   const cur=state.view==='person'?'':state.view==='learn'||state.view==='lesson'?'library':state.view;
   const nav=$('#nav');
   if(!nav.querySelector('.tabs')) nav.innerHTML='<div class="tabs">'+items.map(([k,l])=>`<button class="tab" data-go="${k}" aria-current="false"><span class="ico"><span class="rip"></span><svg viewBox="0 0 24 24" aria-hidden="true">${NAVI[k]}</svg></span><span class="lbl">${l}</span></button>`).join('')+'</div>';
@@ -2604,6 +2624,40 @@ const LESSON_ACT={
   lnext:async t=>{ const id=t.dataset.id, to=t.dataset.to; if(!ldone(id)) setDone(id,true); go(to?'learn/'+to:'learn') },
 };
 
+
+/* ---------- settings ---------- */
+let LAST_SAVE=0;
+const agoText=t=>{ if(!t) return ''; const s=Math.round((Date.now()-t)/1000); return s<10?'just now':s<60?`${s} seconds ago`:s<3600?`${Math.round(s/60)} min ago`:new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}) };
+function settingsHTML(){
+  const n=OUT.length+FQ.length, off=MODE!=='local'&&(!SYNC.online||(!DB&&MODE==='cached'));
+  let acct;
+  if(ENV==='web'&&SBUSER) acct=`<div class="setr"><div class="tx"><b>Signed in</b><span>${esc(SBUSER.email||'')}. Your tree syncs between your devices and is also kept on this one.</span></div><div class="btns"><button class="btn sm danger" data-act="sb-signout">Log out</button></div></div>`;
+  else if(ENV==='web') acct=`<div class="setr"><div class="tx"><b>Not logged in</b><span>Your tree is saved on this device only. Log in to keep it in sync on all your devices.</span></div><div class="btns"><button class="btn sm primary" data-act="sync-setup">Log in</button></div></div>`;
+  else acct=`<div class="setr"><div class="tx"><b>Saved with your Claude account</b><span>This copy of the app saves to your Claude account automatically, so there’s no separate login. Your own site uses its own login.</span></div></div>`;
+  const status=MODE==='local'?['','Saved on this device','Every change is saved on this device as you make it.']
+    :off?['off','Offline',n?`${n} change${n>1?'s':''} saved on this device, waiting to sync.`:'Everything is saved on this device and will sync when you’re back online.']
+    :n?['wait','Saving…',`${n} change${n>1?'s':''} on the way.`]:['','All changes saved','Saved on this device and synced.'];
+  const ex=[...S.people.values()].some(p=>p.example);
+  return `<div class="page narrow"><div class="list-head"><h1>Settings</h1></div><div class="sets stagger">
+    <section><h2>Account</h2><div class="setc">${acct}</div></section>
+    <section><h2>Saving</h2><div class="setc"><div class="setr"><div class="tx"><b class="st"><span class="sd ${status[0]}"></span><span id="set-st">${status[1]}</span></b><span>${status[2]}${LAST_SAVE?` Last saved by hand ${agoText(LAST_SAVE)}.`:''}</span></div><div class="btns"><button class="btn sm primary" data-act="save-now">Save now</button></div></div></div></section>
+    <section><h2>Your data</h2><div class="setc">
+      <div class="setr"><div class="tx"><b>Export</b><span>Download your tree as a file, with or without photos and scans. Keep it as a backup, or move it to another copy of the app.</span></div><div class="btns"><button class="btn sm" data-act="export">Export</button></div></div>
+      <div class="setr"><div class="tx"><b>Import</b><span>Add people and records from a backup file, or from another family tree program (GEDCOM).</span></div><div class="btns"><button class="btn sm" data-act="import">Import</button></div></div>
+      ${ex?`<div class="setr"><div class="tx"><b>Example family</b><span>Your tree still holds the example family used in the lessons.</span></div><div class="btns"><button class="btn sm ghost" data-act="clear-examples">Remove examples</button></div></div>`:''}
+    </div></section>
+    <p class="setv">The Book of the Dead</p></div></div>`;
+}
+async function saveNow(){
+  document.querySelectorAll('[data-notes]').forEach(el=>saveNotes(el));
+  if(MODE==='local') saveLocal(); else { clearTimeout(mirrorT); saveMirror(); saveOutbox() }
+  LAST_SAVE=Date.now();
+  if(MODE!=='local'){ await flush(); await flushFiles() }
+  const n=OUT.length+FQ.length;
+  toast(MODE==='local'?'Saved on this device.':n?`Saved on this device. ${n} change${n>1?'s':''} will sync when you’re online.`:'Saved and synced.');
+  if(state.view==='settings') render();
+}
+
 /* ---------- modals ---------- */
 const dlg=$('#dlg'), body=$('#dlg-body');
 let closeT=0;
@@ -3279,6 +3333,7 @@ const ACT={
   libclear:()=>{ state.libTags.clear(); state.libQ=''; state.libSaved=false; render() },
   libfacets:()=>{ state.libOpen=!state.libOpen; render() },
   ...LESSON_ACT,
+  'save-now':()=>{ haptic(); saveNow() },
   libsaved:()=>{ state.libSaved=!state.libSaved; render() },
   libsave:async t=>{ const id=t.dataset.id; haptic(); pulseAfter(`.star[data-id="${CSS.escape(id)}"]`); if(S.saved.has(id)) await remove('saved',id); else await put('saved',id,{at:Date.now()}) },
 };
